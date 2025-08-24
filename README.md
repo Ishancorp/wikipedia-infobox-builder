@@ -53,3 +53,7 @@ npm start
 ```
 
 This will start your React app on <http://localhost:3000>.
+
+## Run globally
+
+Go to <https://wikibox-builder.netlify.app/>.
