@@ -9,15 +9,6 @@ const BiographyBuilder = () => {
   const dragCounter = useRef(0);
 
   const fieldTypes = [
-    { type: 'group', position: 'group', label: 'Group', icon: '📁' },
-    { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
-    { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
-    { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
-    { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
-    { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
-    { type: 'list', position: 'normal', label: 'List', icon: '📋' },
-    { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
-    { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
     { 
       type: 'group-template', 
       position: 'group', 
@@ -63,6 +54,15 @@ const BiographyBuilder = () => {
         { type: 'text', label: 'Battles/wars', value: '*Cat-Mice War*' },
       ]
     },
+    { type: 'group', position: 'group', label: 'Group', icon: '📁' },
+    { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
+    { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
+    { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
+    { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
+    { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
+    { type: 'list', position: 'normal', label: 'List', icon: '📋' },
+    { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
+    { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
   ];
 
   const handleDragStart = (e, fieldType) => {

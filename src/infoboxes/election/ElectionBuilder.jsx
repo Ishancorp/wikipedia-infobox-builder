@@ -9,6 +9,21 @@ const ElectionBuilder = () => {
   const dragCounter = useRef(0);
 
   const fieldTypes = [
+    { 
+      type: 'group-template', 
+      position: 'group', 
+      label: 'Top Header Template', 
+      icon: '📄',
+      isTemplate: true,
+      children: [
+        { type: 'thumbnail', label: 'Thumbnail', value: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Flag_of_Liberia.svg' },
+        { type: 'line', label: 'Line', value: '--' },
+        { type: 'electionheader', label: 'Election Header', value: {first: '*2004*', middle: 'November 4, 2008', last: '*2012*'}},
+        { type: 'line', label: 'Line', value: '--' },
+        { type: 'singletext', label: 'Single Text', value: '538 members of the *Electoral College*\n270 electoral votes needed to win'},
+        { type: 'singletext', label: 'Single Text', value: '*Opinion polls*'},
+      ]
+    },
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
     { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
@@ -771,9 +786,7 @@ const ElectionBuilder = () => {
       case 'group':
         return (
             field.children && field.children.map((child) => (
-              <div key={child.id} style={{ marginBottom: '2px', paddingLeft: '12px' }}>
-                <strong>{child.label}:</strong> {renderPreviewValue(child)}
-              </div>
+              renderPreviewValue(child)
             ))
           );
       
@@ -801,7 +814,7 @@ const ElectionBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colspan="2" className="middle"></td></tr>
+          <tr><td colSpan="2" className="middle"></td></tr>
         </>
       );
     }
@@ -813,7 +826,7 @@ const ElectionBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colspan="2" className="middle"></td></tr>
+          <tr><td colSpan="2" className="middle"></td></tr>
         </>
       );
     }
@@ -825,7 +838,7 @@ const ElectionBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colspan="2" className="middle"></td></tr>
+          <tr><td colSpan="2" className="middle"></td></tr>
         </>
       );
     }
@@ -840,16 +853,7 @@ const ElectionBuilder = () => {
         </tr>
       );
     }
-    else if (field.position === 'thumbnail') {
-      return (
-        <tr key={field.id} className="wikibox-preview-row">
-          <td colSpan="2" className="wikibox-preview-image">
-            {renderPreviewValue(field)}
-          </td>
-        </tr>
-      );
-    }
-    else if (field.position === 'image') {
+    else if (field.position === 'thumbnail' || field.position === 'image') {
       return (
         <tr key={field.id} className="wikibox-preview-row">
           <td colSpan="2" className="wikibox-preview-image">
@@ -860,9 +864,58 @@ const ElectionBuilder = () => {
     }
     else if (field.position === 'group') {
       return (
-        field.children && field.children.map((child) => (
-          renderTableRow(child)
-        ))
+        field.children && field.children.map((child) => {
+          // Handle any field with 'single' position OR types that should be single-width
+          if (child.position === 'single' || child.type === 'line' || child.type === 'singletext') {
+            return (
+              <>
+                <tr key={child.id} className="wikibox-preview-row">
+                  <td colSpan="2" className="wikibox-preview-value-single-container">
+                    {renderPreviewValue(child)}
+                  </td>
+                </tr>
+                <tr><td colSpan="2" className="middle"></td></tr>
+              </>
+            );
+          }
+          // Handle subheaders specially
+          else if (child.position === 'subheader' || child.type === 'subheader') {
+            return (
+              <tr key={child.id} className="wikibox-preview-row">
+                <td colSpan="2" className="wikibox-preview-subheader">
+                  <div className="wikibox-preview-subheader">
+                    {renderPreviewValue(child)}
+                  </div>
+                </td>
+              </tr>
+            );
+          }
+          // Handle ternary fields specially
+          else if (child.position === 'ternary' || child.type === 'electionheader') {
+            return (
+              <>
+                <tr key={child.id} className="wikibox-preview-row">
+                  <td colSpan="2" className="wikibox-preview-value-ternary-container">
+                    {renderPreviewValue(child)}
+                  </td>
+                </tr>
+                <tr><td colSpan="2" className="middle"></td></tr>
+              </>
+            );
+          }
+          // Handle thumbnails and images in groups specially
+          else if (child.type === 'thumbnail' || child.type === 'image') {
+            return (
+              <tr key={child.id} className="wikibox-preview-row">
+                <td colSpan="2" className="wikibox-preview-image">
+                  {renderPreviewValue(child)}
+                </td>
+              </tr>
+            );
+          }
+          // For other field types, use the normal renderTableRow logic
+          return renderTableRow(child);
+        })
       );
     }
   };
