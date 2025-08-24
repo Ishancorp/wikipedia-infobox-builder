@@ -41,3 +41,32 @@
     border: none;
     cursor: pointer
 }
+
+.wikibox-field-editor {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px
+}
+
+.wikibox-sidebar {
+    width: 200px;
+    background: #f5f5f5;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+}
+
+.wikibox-group-header {
+    display: flex; 
+    justify-content: flex-end; 
+    align-items: center;
+    margin-bottom: 8px
+}
+
+.wikibox-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px
+}

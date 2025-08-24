@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import './WikiboxBuilderPreview.css';
-import './WikiboxBuilderField.css';
+import './ElectionBuilderPreview.css';
+import '../css/WikiboxBuilderField.css';
 
-const WikiboxBuilder = () => {
+const ElectionBuilder = () => {
   const [fields, setFields] = useState([]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [title, setTitle] = useState('');
@@ -12,57 +12,15 @@ const WikiboxBuilder = () => {
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
     { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
+    { type: 'line', position: 'single', label: 'Line', icon: '—' },
+    { type: 'electionheader', position: 'ternary', label: 'Election Header', icon: '📝' },
     { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
     { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
+    { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
     { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
     { type: 'list', position: 'normal', label: 'List', icon: '📋' },
     { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
     { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Political Office Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Political *Office*' },
-        { type: 'singletext', label: 'Description', value: '\'\'\'In office\'\'\'\nMarch 12, 2022 -- March 14, 2024' },
-        { type: 'text', label: 'Chieftain', value: '*Lord Foppington*' },
-        { type: 'text', label: 'Preceded by', value: '*Lincoln Chesworth*' },
-        { type: 'text', label: 'Succeeded by', value: '*Lincoln Chesworth*' }
-      ]
-    },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Personal Details Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Personal details' },
-        { type: 'text', label: 'Born', value: 'Squire Payne\nMay 5, 1954\n*New Cat City*, *New Cat State*, *United Cats*' },
-        { type: 'text', label: 'Died', value: 'Not Yet' },
-        { type: 'text', label: 'Political party', value: '*Imperial Reactionary*' },
-        { type: 'text', label: 'Other political affiliations', value: '*Imperial Sanoe* (1989)' },
-        { type: 'text', label: 'Spouse', value: '*Lady Payne*' },
-        { type: 'text', label: 'Education', value: '*Feline University*' }
-      ]
-    },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Military Service Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Military service' },
-        { type: 'text', label: 'Allegiance', value: '*United Cats*' },
-        { type: 'text', label: 'Branch/service', value: '*United Cats Volunteers*\n(*United Cats Army*)' },
-        { type: 'text', label: 'Years of service', value: '1968--1972' },
-        { type: 'text', label: 'Rank', value: '*Imperial Stadtholder*' },
-        { type: 'text', label: 'Battles/wars', value: '*Cat-Mice War*' },
-      ]
-    },
   ];
 
   const handleDragStart = (e, fieldType) => {
@@ -105,8 +63,11 @@ const WikiboxBuilder = () => {
     switch (type) {
       case 'text': return '';
       case 'singletext': return '';
+      case 'line': return '';
+      case 'electionheader': return {first: '', middle: '', last: ''};
       case 'subheader': return '';
       case 'image': return '';
+      case 'thumbnail': return '';
       case 'date': return new Date().toLocaleDateString();
       case 'list': return ['Item 1', 'Item 2'];
       case 'treelist': return ['Item 1', 'Item 2'];
@@ -281,6 +242,41 @@ const WikiboxBuilder = () => {
 
   const renderFieldValue = (field) => {
     switch (field.type) {
+      case 'electionheader':
+        return (
+          <>
+            <input
+                className="wikibox-field-input wikibox-date-input"
+                type="text"
+                value={field.value.first}
+                onChange={(e) => {
+                  const newList = JSON.parse(JSON.stringify(field.value));
+                  newList.first = e.target.value;
+                  updateField(field.id, newList);
+                }}
+            />
+            <textarea
+                className="wikibox-field-input"
+                value={field.value.middle}
+                onChange={(e) => {
+                  const newList = JSON.parse(JSON.stringify(field.value));
+                  newList.middle = e.target.value;
+                  updateField(field.id, newList);
+                }}
+                placeholder="Enter text here"
+            />
+            <input
+                className="wikibox-field-input wikibox-date-input"
+                type="text"
+                value={field.value.last}
+                onChange={(e) => {
+                  const newList = JSON.parse(JSON.stringify(field.value));
+                  newList.last = e.target.value;
+                  updateField(field.id, newList);
+                }}
+            />
+          </>
+        );
       case 'singletext':
       case 'text':
         return (
@@ -291,6 +287,9 @@ const WikiboxBuilder = () => {
             placeholder="Enter text here"
           />
         );
+      
+      case 'line':
+        return (<></>);
       
       case 'subheader':
         return (
@@ -350,6 +349,28 @@ const WikiboxBuilder = () => {
                   />
                 )}
               </>
+            )}
+          </div>
+        );
+      
+      case 'thumbnail':
+        return (
+          <div className="wikibox-image-container">
+            <input
+              className="wikibox-field-input wikibox-image-input"
+              type="url"
+              placeholder="Image URL"
+              value={field.value}
+              onChange={(e) => updateField(field.id, e.target.value)}
+            />
+            {field.value && (
+              <img 
+                className="wikibox-image"
+                src={field.value} 
+                alt="wikibox" 
+                style={{ maxWidth: '50px', height: 'auto', marginBottom: '4px' }}
+                onError={(e) => e.target.style.display = 'none'}
+              />
             )}
           </div>
         );
@@ -415,7 +436,7 @@ const WikiboxBuilder = () => {
       case 'group':
         return (
           <div className="wikibox-group-container">
-            <div className="wikibox-group-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
+            <div className="wikibox-group-header">
               <button
                 onClick={() => toggleGroupCollapse(field.id)}
                 style={{ padding: '4px 8px', background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer' }}
@@ -492,6 +513,46 @@ const WikiboxBuilder = () => {
                               placeholder="Enter text here"
                             />
                           );
+      
+                        case 'line':
+                          return (<></>);
+
+                        
+                        case 'electionheader':
+                          return (
+                            <>
+                              <input
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.first}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(child.value));
+                                newList.first = e.target.value;
+                                updateGroupChild(field.id, child.id, newList);
+                                }}
+                                />
+                              <textarea
+                                className="wikibox-field-input"
+                                value={field.value.middle}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(child.value));
+                                newList.middle = e.target.value;
+                                updateGroupChild(field.id, child.id, newList);
+                                }}
+                                placeholder="Enter text here"
+                              />
+                              <input
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.last}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(field.value));
+                                newList.last = e.target.value;
+                                updateGroupChild(field.id, newList);
+                                }}
+                              />
+                            </>
+                          );
                         
                         case 'subheader':
                           return (
@@ -511,6 +572,28 @@ const WikiboxBuilder = () => {
                               value={child.value}
                               onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
                             />
+                          );
+                        
+                        case 'thumbnail':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="Image URL"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                style={{ marginBottom: '4px' }}
+                              />
+                              {child.value && (
+                                <img 
+                                  src={child.value} 
+                                  alt="preview" 
+                                  style={{ maxWidth: '50px', height: 'auto' }}
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
                           );
                         
                         case 'image':
@@ -615,6 +698,27 @@ const WikiboxBuilder = () => {
 
   const renderPreviewValue = (field) => {
     switch (field.type) {
+      case 'thumbnail':
+        return field.value ? (
+          <div style={{ textAlign: 'center' }}>
+            <img 
+              className="wikibox-preview-image"
+              src={field.value} 
+              alt="Preview" 
+              style={{ maxWidth: '50px', height: 'auto' }}
+              onError={(e) => e.target.style.display = 'none'}
+            />
+            {field.showCaption && field.caption && (
+              <div className="wikibox-preview-caption">
+                {parseTextWithSpans(field.caption)}
+              </div>
+            )}
+          </div>
+        ) : 'No image';
+      
+      case 'line':
+        return <hr/>;
+      
       case 'image':
         return field.value ? (
           <div style={{ textAlign: 'center' }}>
@@ -673,6 +777,13 @@ const WikiboxBuilder = () => {
             ))
           );
       
+      case 'electionheader':
+      return <>
+        {field.value.first && <div>← {parseTextWithSpans(field.value.first)}</div>}
+        <div><b>{parseTextWithSpans(field.value.middle)}</b></div>
+        {field.value.last && <div>{parseTextWithSpans(field.value.last)} →</div>}
+      </>
+      
       default:
         return <span className="wikibox-preview-value">{parseTextWithSpans(field.value)}</span>;
     }
@@ -706,6 +817,18 @@ const WikiboxBuilder = () => {
         </>
       );
     }
+    else if (field.position === 'ternary') {
+      return (
+        <>
+          <tr key={field.id} className="wikibox-preview-row">
+            <td colSpan="2" className="wikibox-preview-value-ternary-container">
+              {renderPreviewValue(field)}
+            </td>
+          </tr>
+          <tr><td colspan="2" className="middle"></td></tr>
+        </>
+      );
+    }
     else if (field.position === 'subheader') {
       return (
         <tr key={field.id} className="wikibox-preview-row">
@@ -713,6 +836,15 @@ const WikiboxBuilder = () => {
             <div className="wikibox-preview-subheader">
               {renderPreviewValue(field)}
             </div>
+          </td>
+        </tr>
+      );
+    }
+    else if (field.position === 'thumbnail') {
+      return (
+        <tr key={field.id} className="wikibox-preview-row">
+          <td colSpan="2" className="wikibox-preview-image">
+            {renderPreviewValue(field)}
           </td>
         </tr>
       );
@@ -738,7 +870,7 @@ const WikiboxBuilder = () => {
   return (
     <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
       {/* Sidebar */}
-      <div className="wikibox-sidebar" style={{ width: '200px', background: '#f5f5f5', padding: '20px', borderRight: '1px solid #ddd' }}>
+      <div className="wikibox-sidebar">
         <h3 className="wikibox-sidebar-title" style={{ marginTop: 0 }}>Field Types</h3>
         <div className="wikibox-field-types">
           {fieldTypes.map((fieldType) => (
@@ -770,7 +902,7 @@ const WikiboxBuilder = () => {
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
         {/* Editor */}
         <div className="wikibox-editor" style={{ flex: 1 }}>
-          <h2 className="wikibox-editor-title">Wikibox Editor</h2>
+          <h2 className="wikibox-editor-title">Wikibox Editor – Elections</h2>
           
           <div className="wikibox-title-editor" style={{ marginBottom: '20px' }}>
             <label className="wikibox-title-label" style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>
@@ -807,8 +939,8 @@ const WikiboxBuilder = () => {
             ) : (
               <div className="wikibox-fields-list">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="wikibox-field-editor" style={{ marginBottom: '16px', padding: '12px', background: 'white', border: '1px solid #ddd', borderRadius: '4px' }}>
-                    <div className="wikibox-field-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div key={field.id} className="wikibox-field-editor">
+                    <div className="wikibox-field-header">
                       <input
                         className="wikibox-field-label-input"
                         type="text"
@@ -854,13 +986,10 @@ const WikiboxBuilder = () => {
         {/* Preview */}
         <div className="wikibox-preview-container">
           <h3 className="wikibox-preview-title">Preview</h3>
+          <div className="wikibox-preview-header">{title}</div>
           <table className="wikibox-preview">
             <thead>
-              <tr>
-                <th colSpan="2" className="wikibox-preview-header">
-                  {title}
-                </th>
-              </tr>
+              <tr><th colSpan="2" className="wikibox-preview-header"></th></tr>
             </thead>
             <tbody className="wikibox-preview-content">
               {fields.map((field) => renderTableRow(field))}
@@ -873,4 +1002,4 @@ const WikiboxBuilder = () => {
   );
 };
 
-export default WikiboxBuilder;
+export default ElectionBuilder;
