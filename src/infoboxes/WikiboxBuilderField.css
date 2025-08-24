@@ -1,0 +1,43 @@
+.wikibox-field-input {
+    width: 100%;
+    padding: 4px;
+    border: 1px solid #ccc;
+}
+
+.wikibox-image-input {
+    margin-bottom: 4px
+}
+
+.remove-btn {
+    padding: 2px 6px; 
+    background: #ff4444; 
+    color: white; 
+    border: none;
+    cursor: pointer
+}
+
+.move-btn {
+    padding: 2px 6px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px
+}
+
+.list-move-btn {
+    margin-right: 4px; 
+    padding: 2px 6px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    cursor: pointer
+}
+
+.wikibox-list-add-btn {
+    padding: 4px 8px; 
+    background: #4CAF50; 
+    color: white; 
+    border: none;
+    cursor: pointer
+}
