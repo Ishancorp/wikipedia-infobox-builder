@@ -18,240 +18,250 @@ const ElectionBuilder = () => {
   const [imageInputModes, setImageInputModes] = useState({});
 
   const fieldTypes = [
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Top Header Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'thumbnail', label: 'Thumbnail', value: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Flag_of_Liberia.svg' },
-        { type: 'line', label: 'Line', value: '--' },
-        { type: 'electionheader', label: 'Election Header', value: {first: '*2004*', middle: 'November 4, 2008', last: '*2012*'}},
-        { type: 'line', label: 'Line', value: '--' },
-        { type: 'singletext', label: 'Single Text', value: '538 members of the *Electoral College*\n270 electoral votes needed to win'},
-        { type: 'singletext', label: 'Single Text', value: '*Opinion polls*'},
+    {
+      type: "templates",
+      list: [
+        {
+          type: 'group-template', 
+          position: 'group', 
+          label: 'Top Header Template', 
+          icon: '📄',
+          isTemplate: true,
+          children: [
+            { type: 'thumbnail', label: 'Thumbnail', value: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Flag_of_Liberia.svg' },
+            { type: 'line', label: 'Line', value: '--' },
+            { type: 'electionheader', label: 'Election Header', value: {first: '*2004*', middle: 'November 4, 2008', last: '*2012*'}},
+            { type: 'line', label: 'Line', value: '--' },
+            { type: 'singletext', label: 'Single Text', value: '538 members of the *Electoral College*\n270 electoral votes needed to win'},
+            { type: 'singletext', label: 'Single Text', value: '*Opinion polls*'},
+          ]
+        },
+        {
+          type: "electoral-template",
+          label: "Electoral Template (Presidential)",
+          icon: '📄',
+          position: "electoral",
+          isTemplate: true,
+          value: {
+            title: "Electoral Title",
+            columns: 2,
+            columnData: [{}, {}]
+          },
+          caption: "", 
+          showCaption: false,
+          parentGroup: null,
+          children: [
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Turnout', 
+              value: '61.6%^{*[1]*}{{increase}} 1.5 *pp*' ,
+              columnIndex: -1
+            },
+            {
+              type: "inlineimage",
+              label: " ",
+              position: "normal",
+              value: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Obama_portrait_crop.jpg",
+              caption: "", 
+              showCaption: false,
+              columnIndex: 0
+            },
+            { type: 'color', position: 'normal', label: '', value: '#3333FF', columnIndex: 0},
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Nominee', 
+              value: '\'\'\'*Barack Obama*\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Party', 
+              value: '*Democratic*' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Home state', 
+              value: '*Illinois*' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Running mate', 
+              value: '\'\'\'*Joe Biden*\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Electoral vote', 
+              value: '\'\'\'365\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'States carried', 
+              value: '\'\'\'28 + *DC* + *NE-02*\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Popular vote', 
+              value: '\'\'\'69,498,516\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Percentage', 
+              value: '\'\'\'52.9%\'\'\'' ,
+              columnIndex: 0
+            },
+            {
+              type: "inlineimage",
+              label: " ",
+              position: "normal",
+              value: "https://upload.wikimedia.org/wikipedia/commons/d/d6/John_McCain_official_portrait_2009_%28cropped%29.jpg",
+              caption: "", 
+              showCaption: false,
+              columnIndex: 1
+            },
+            { type: 'color', position: 'normal', label: '', value: '#E81B23', columnIndex: 1},
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Nominee', 
+              value: '*John McCain*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Party', 
+              value: '*Republican*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Home state', 
+              value: '*Arizona*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Running mate', 
+              value: '*Sarah Palin*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Electoral vote', 
+              value: '173' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'States carried', 
+              value: '22' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Popular vote', 
+              value: '59,948,323' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Percentage', 
+              value: '45.7%' ,
+              columnIndex: 1
+            },
+          ],
+          isCollapsed: false
+        },
+        { 
+          type: 'group-template', 
+          position: 'group', 
+          label: 'Bottom Footer Template', 
+          icon: '📄',
+          isTemplate: true,
+          children: [
+            { 
+              type: 'line', 
+              label: 'Line', 
+              value: '--' 
+            },
+            {
+              type: "image",
+              label: " ",
+              position: "single",
+              value: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/ElectoralCollege2008.svg/2560px-ElectoralCollege2008.svg.png",
+              caption: "Presidential election results map. Blue denotes states won by Obama/Biden and red denotes those won by McCain/Palin. Numbers indicate *electoral votes* cast by each state and the District of Columbia.", 
+              showCaption: true,
+              columnIndex: 1
+            },
+            { 
+              type: 'line', 
+              label: 'Line', 
+              value: '--' 
+            },
+            { 
+              type: 'electionfooter', 
+              position: 'binary', 
+              value: {
+                first: '\'\'\'President before election\'\'\'', 
+                middle: '', 
+                last: '\'\'\'Elected President\'\'\''
+              } 
+            },
+            { 
+              type: 'electionfooter', 
+              position: 'binary', 
+              value: {
+                first: '*George W. Bush*\n*Republican*', 
+                middle: '', 
+                last: '*Barack Obama*\n*Democratic*'
+              } 
+            },
+          ]
+        },
       ]
     },
     {
-      type: "electoral-template",
-      label: "Electoral Template (Presidential)",
-      icon: '📄',
-      position: "electoral",
-      isTemplate: true,
-      value: {
-        title: "Electoral Title",
-        columns: 2,
-        columnData: [{}, {}]
-      },
-      caption: "", 
-      showCaption: false,
-      parentGroup: null,
-      children: [
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Turnout', 
-          value: '61.6%^{*[1]*}{{increase}} 1.5 *pp*' ,
-          columnIndex: -1
-        },
-        {
-          type: "inlineimage",
-          label: " ",
-          position: "normal",
-          value: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Obama_portrait_crop.jpg",
-          caption: "", 
-          showCaption: false,
-          columnIndex: 0
-        },
-        { type: 'color', position: 'normal', label: '', value: '#3333FF', columnIndex: 0},
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Nominee', 
-          value: '\'\'\'*Barack Obama*\'\'\'' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Party', 
-          value: '*Democratic*' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Home state', 
-          value: '*Illinois*' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Running mate', 
-          value: '\'\'\'*Joe Biden*\'\'\'' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Electoral vote', 
-          value: '\'\'\'365\'\'\'' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'States carried', 
-          value: '\'\'\'28 + *DC* + *NE-02*\'\'\'' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Popular vote', 
-          value: '\'\'\'69,498,516\'\'\'' ,
-          columnIndex: 0
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Percentage', 
-          value: '\'\'\'52.9%\'\'\'' ,
-          columnIndex: 0
-        },
-        {
-          type: "inlineimage",
-          label: " ",
-          position: "normal",
-          value: "https://upload.wikimedia.org/wikipedia/commons/d/d6/John_McCain_official_portrait_2009_%28cropped%29.jpg",
-          caption: "", 
-          showCaption: false,
-          columnIndex: 1
-        },
-        { type: 'color', position: 'normal', label: '', value: '#E81B23', columnIndex: 1},
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Nominee', 
-          value: '*John McCain*' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Party', 
-          value: '*Republican*' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Home state', 
-          value: '*Arizona*' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Running mate', 
-          value: '*Sarah Palin*' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Electoral vote', 
-          value: '173' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'States carried', 
-          value: '22' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Popular vote', 
-          value: '59,948,323' ,
-          columnIndex: 1
-        },
-        { 
-          type: 'text', 
-          position: 'normal', 
-          label: 'Percentage', 
-          value: '45.7%' ,
-          columnIndex: 1
-        },
-      ],
-      isCollapsed: false
-    },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Bottom Footer Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { 
-          type: 'line', 
-          label: 'Line', 
-          value: '--' 
-        },
-        {
-          type: "image",
-          label: " ",
-          position: "single",
-          value: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/ElectoralCollege2008.svg/2560px-ElectoralCollege2008.svg.png",
-          caption: "Presidential election results map. Blue denotes states won by Obama/Biden and red denotes those won by McCain/Palin. Numbers indicate *electoral votes* cast by each state and the District of Columbia.", 
-          showCaption: true,
-          columnIndex: 1
-        },
-        { 
-          type: 'line', 
-          label: 'Line', 
-          value: '--' 
-        },
-        { 
-          type: 'electionfooter', 
-          position: 'binary', 
-          value: {
-            first: '\'\'\'President before election\'\'\'', 
-            middle: '', 
-            last: '\'\'\'Elected President\'\'\''
-          } 
-        },
-        { 
-          type: 'electionfooter', 
-          position: 'binary', 
-          value: {
-            first: '*George W. Bush*\n*Republican*', 
-            middle: '', 
-            last: '*Barack Obama*\n*Democratic*'
-          } 
-        },
+      type: "Elements",
+      list: [
+        { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
+        { type: 'group', position: 'group', label: 'Group', icon: '📁' },
+        { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
+        { type: 'color', position: 'normal', label: 'Color', icon: '🔴' },
+        { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
+        { type: 'line', position: 'single', label: 'Line', icon: '—' },
+        { type: 'electionheader', position: 'ternary', label: 'Election Header', icon: '📝' },
+        { type: 'electionfooter', position: 'binary', label: 'Election Footer', icon: '📝' },
+        { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
+        { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
+        { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
+        { type: 'inlineimage', position: 'normal', label: 'Inline Image', icon: '🖼️' },
+        { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
+        { type: 'list', position: 'normal', label: 'List', icon: '📋' },
+        { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
+        { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
       ]
     },
-    { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
-    { type: 'group', position: 'group', label: 'Group', icon: '📁' },
-    { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
-    { type: 'color', position: 'normal', label: 'Color', icon: '🔴' },
-    { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
-    { type: 'line', position: 'single', label: 'Line', icon: '—' },
-    { type: 'electionheader', position: 'ternary', label: 'Election Header', icon: '📝' },
-    { type: 'electionfooter', position: 'binary', label: 'Election Footer', icon: '📝' },
-    { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
-    { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
-    { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
-    { type: 'inlineimage', position: 'normal', label: 'Inline Image', icon: '🖼️' },
-    { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
-    { type: 'list', position: 'normal', label: 'List', icon: '📋' },
-    { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
-    { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
   ];
 
   const handleDragStart = (e, fieldType) => {

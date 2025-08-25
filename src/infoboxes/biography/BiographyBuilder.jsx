@@ -17,60 +17,70 @@ const BiographyBuilder = () => {
   const dragCounter = useRef(0);
 
   const fieldTypes = [
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Political Office Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Political *Office*' },
-        { type: 'singletext', label: 'Description', value: '\'\'\'In office\'\'\'\nMarch 12, 2022 -- March 14, 2024' },
-        { type: 'text', label: 'Chieftain', value: '*Lord Foppington*' },
-        { type: 'text', label: 'Preceded by', value: '*Lincoln Chesworth*' },
-        { type: 'text', label: 'Succeeded by', value: '*Lincoln Chesworth*' }
+    {
+      type: "Templates",
+      list: [
+        { 
+          type: 'group-template', 
+          position: 'group', 
+          label: 'Political Office Template', 
+          icon: '📄',
+          isTemplate: true,
+          children: [
+            { type: 'subheader', label: 'Overview', value: 'Political *Office*' },
+            { type: 'singletext', label: 'Description', value: '\'\'\'In office\'\'\'\nMarch 12, 2022 -- March 14, 2024' },
+            { type: 'text', label: 'Chieftain', value: '*Lord Foppington*' },
+            { type: 'text', label: 'Preceded by', value: '*Lincoln Chesworth*' },
+            { type: 'text', label: 'Succeeded by', value: '*Lincoln Chesworth*' }
+          ]
+        },
+        { 
+          type: 'group-template', 
+          position: 'group', 
+          label: 'Personal Details Template', 
+          icon: '📄',
+          isTemplate: true,
+          children: [
+            { type: 'subheader', label: 'Overview', value: 'Personal details' },
+            { type: 'text', label: 'Born', value: 'Squire Payne\nMay 5, 1954\n*New Cat City*, *New Cat State*, *United Cats*' },
+            { type: 'text', label: 'Died', value: 'Not Yet' },
+            { type: 'text', label: 'Political party', value: '*Imperial Reactionary*' },
+            { type: 'text', label: 'Other political affiliations', value: '*Imperial Sanoe* (1989)' },
+            { type: 'text', label: 'Spouse', value: '*Lady Payne*' },
+            { type: 'text', label: 'Education', value: '*Feline University*' }
+          ]
+        },
+        { 
+          type: 'group-template', 
+          position: 'group', 
+          label: 'Military Service Template', 
+          icon: '📄',
+          isTemplate: true,
+          children: [
+            { type: 'subheader', label: 'Overview', value: 'Military service' },
+            { type: 'text', label: 'Allegiance', value: '*United Cats*' },
+            { type: 'text', label: 'Branch/service', value: '*United Cats Volunteers*\n(*United Cats Army*)' },
+            { type: 'text', label: 'Years of service', value: '1968--1972' },
+            { type: 'text', label: 'Rank', value: '*Imperial Stadtholder*' },
+            { type: 'text', label: 'Battles/wars', value: '*Cat-Mice War*' },
+          ]
+        },
       ]
     },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Personal Details Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Personal details' },
-        { type: 'text', label: 'Born', value: 'Squire Payne\nMay 5, 1954\n*New Cat City*, *New Cat State*, *United Cats*' },
-        { type: 'text', label: 'Died', value: 'Not Yet' },
-        { type: 'text', label: 'Political party', value: '*Imperial Reactionary*' },
-        { type: 'text', label: 'Other political affiliations', value: '*Imperial Sanoe* (1989)' },
-        { type: 'text', label: 'Spouse', value: '*Lady Payne*' },
-        { type: 'text', label: 'Education', value: '*Feline University*' }
+    {
+      type: "Elements",
+      list: [
+        { type: 'group', position: 'group', label: 'Group', icon: '📁' },
+        { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
+        { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
+        { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
+        { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
+        { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
+        { type: 'list', position: 'normal', label: 'List', icon: '📋' },
+        { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
+        { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
       ]
     },
-    { 
-      type: 'group-template', 
-      position: 'group', 
-      label: 'Military Service Template', 
-      icon: '📄',
-      isTemplate: true,
-      children: [
-        { type: 'subheader', label: 'Overview', value: 'Military service' },
-        { type: 'text', label: 'Allegiance', value: '*United Cats*' },
-        { type: 'text', label: 'Branch/service', value: '*United Cats Volunteers*\n(*United Cats Army*)' },
-        { type: 'text', label: 'Years of service', value: '1968--1972' },
-        { type: 'text', label: 'Rank', value: '*Imperial Stadtholder*' },
-        { type: 'text', label: 'Battles/wars', value: '*Cat-Mice War*' },
-      ]
-    },
-    { type: 'group', position: 'group', label: 'Group', icon: '📁' },
-    { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
-    { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
-    { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
-    { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
-    { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
-    { type: 'list', position: 'normal', label: 'List', icon: '📋' },
-    { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
-    { type: 'link', position: 'normal', label: 'Link', icon: '🔗' },
   ];
 
   const handleDragStart = (e, fieldType) => {
