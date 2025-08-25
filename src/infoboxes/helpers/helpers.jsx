@@ -4,6 +4,40 @@ const parseTextWithSpans = (text) => {
   const safeText = text.replace(/\\\*/g, placeholder);
 
   const parseSegment = (segment) => {
+    // Handle escaped superscript: \^{...} -> raw ^{...}
+    const escapedSupMatch = segment.match(/\\\^\{([^}]+)\}/);
+    if (escapedSupMatch) {
+      const before = segment.slice(0, escapedSupMatch.index);
+      const raw = `^{${escapedSupMatch[1]}}`; // keep it literal
+      const after = segment.slice(escapedSupMatch.index + escapedSupMatch[0].length);
+      return (
+        <>
+          {before && parseSegment(before)}
+          {raw}
+          {after && parseSegment(after)}
+        </>
+      );
+    }
+
+    // Handle real superscript: ^{...}
+    const supMatch = segment.match(/\^\{([^}]+)\}/);
+    if (supMatch) {
+      const before = segment.slice(0, supMatch.index);
+      const after = segment.slice(supMatch.index + supMatch[0].length);
+      return (
+        <>
+          {before && parseSegment(before)}
+          <sup>{parseSegment(supMatch[1])}</sup>
+          {after && parseSegment(after)}
+        </>
+      );
+    }
+
+    // Handle escaped caret: \^ -> ^
+    if (segment.includes("\\^")) {
+      return segment.replace(/\\\^/g, "^");
+    }
+
     // Find the first occurrence of any marker
     const markers = [
       { regex: /\*([^*]+)\*/, className: "linktext", length: 1 },
@@ -27,17 +61,15 @@ const parseTextWithSpans = (text) => {
 
     if (!earliestMatch) {
       // No markers found, return plain text with placeholders restored
-      return segment.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
+      return segment.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "—");
     }
 
     const beforeMatch = segment.slice(0, earliestIndex);
-    const matchedText = earliestMatch[1]; // Content inside the markers
+    const matchedText = earliestMatch[1];
     const afterMatch = segment.slice(earliestIndex + earliestMatch[0].length);
 
-    // Recursively parse the content inside the markers
     const parsedInner = parseSegment(matchedText);
     
-    // Create the appropriate element
     let wrappedContent;
     if (matchedMarker.className) {
       wrappedContent = <span className={matchedMarker.className}>{parsedInner}</span>;

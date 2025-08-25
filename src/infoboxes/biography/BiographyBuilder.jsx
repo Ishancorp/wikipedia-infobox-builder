@@ -821,7 +821,7 @@ const BiographyBuilder = () => {
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
         <div className="wikibox-editor" style={{ flex: 1 }}>
-          <h2 className="wikibox-editor-title">Wikibox Editor – Biography</h2>
+          <h2 className="wikibox-editor-title">Wikibox Editor — Biography</h2>
           
           <div className="wikibox-title-editor" style={{ marginBottom: '20px' }}>
             <label className="wikibox-title-label" style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>
