@@ -58,15 +58,19 @@ Create election infoboxes featuring:
 - **List**: Bulleted lists with add/remove functionality
 - **Tree List**: Hierarchical list structure
 - **Group**: Container for organizing related fields
-- **Electoral**: Special multi-column container for election data
 
 ### Election-Specific
 
 - **Election Header**: Three-part header (previous ← current → next)
 - **Election Footer**: Two-part footer for before/after election
 - **Line**: Visual separator element
+- **Electoral**: Special multi-column container for election data
 
 ## Getting Started
+
+Go to <https://wikibox-builder.netlify.app/>.
+
+## Use Locally
 
 ### Prerequisites
 
@@ -77,7 +81,6 @@ Create election infoboxes featuring:
 
 ```bash
 npm install
-npm install react-router-dom
 ```
 
 ### Running the Application

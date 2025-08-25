@@ -300,7 +300,7 @@ const BiographyBuilder = () => {
       case 'date':
         return (
           <input
-            className="wikibox-field-input wikibox-date-input"
+            className="wikibox-field-input"
             type="date"
             value={field.value}
             onChange={(e) => updateField(field.id, e.target.value)}

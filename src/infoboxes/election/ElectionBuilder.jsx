@@ -713,7 +713,7 @@ const ElectionBuilder = () => {
         return (
           <>
             <input
-                className="wikibox-field-input wikibox-date-input"
+                className="wikibox-field-input"
                 type="text"
                 value={field.value.first}
                 onChange={(e) => {
@@ -733,7 +733,7 @@ const ElectionBuilder = () => {
                 placeholder="Enter text here"
             />
             <input
-                className="wikibox-field-input wikibox-date-input"
+                className="wikibox-field-input"
                 type="text"
                 value={field.value.last}
                 onChange={(e) => {
@@ -748,7 +748,7 @@ const ElectionBuilder = () => {
         return (
           <>
             <textarea
-                className="wikibox-field-input wikibox-date-input"
+                className="wikibox-field-input"
                 type="text"
                 value={field.value.first}
                 onChange={(e) => {
@@ -758,7 +758,7 @@ const ElectionBuilder = () => {
                 }}
             />
             <textarea
-                className="wikibox-field-input wikibox-date-input"
+                className="wikibox-field-input"
                 type="text"
                 value={field.value.last}
                 onChange={(e) => {
@@ -807,7 +807,7 @@ const ElectionBuilder = () => {
       case 'date':
         return (
           <input
-            className="wikibox-field-input wikibox-date-input"
+            className="wikibox-field-input"
             type="date"
             value={field.value}
             onChange={(e) => updateField(field.id, e.target.value)}
@@ -1517,7 +1517,7 @@ const ElectionBuilder = () => {
                             return (
                               <>
                                 <textarea
-                                  className="wikibox-field-input wikibox-date-input"
+                                  className="wikibox-field-input"
                                   type="text"
                                   value={child.value.first || ''}
                                   onChange={(e) => {
@@ -1529,7 +1529,7 @@ const ElectionBuilder = () => {
                                   style={{ marginBottom: '4px' }}
                                 />
                                 <textarea
-                                  className="wikibox-field-input wikibox-date-input"
+                                  className="wikibox-field-input"
                                   type="text"
                                   value={child.value.last || ''}
                                   onChange={(e) => {
@@ -1546,7 +1546,7 @@ const ElectionBuilder = () => {
                             return (
                               <>
                                 <input
-                                  className="wikibox-field-input wikibox-date-input"
+                                  className="wikibox-field-input"
                                   type="text"
                                   value={child.value.first || ''}
                                   onChange={(e) => {
@@ -1569,7 +1569,7 @@ const ElectionBuilder = () => {
                                   style={{ marginBottom: '4px' }}
                                 />
                                 <input
-                                  className="wikibox-field-input wikibox-date-input"
+                                  className="wikibox-field-input"
                                   type="text"
                                   value={child.value.last || ''}
                                   onChange={(e) => {
@@ -1595,7 +1595,7 @@ const ElectionBuilder = () => {
                           case 'date':
                             return (
                               <input
-                                className="wikibox-field-input wikibox-date-input"
+                                className="wikibox-field-input"
                                 type="date"
                                 value={child.value}
                                 onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
@@ -1949,7 +1949,7 @@ const ElectionBuilder = () => {
                           return (
                             <>
                               <textarea
-                                className="wikibox-field-input wikibox-date-input"
+                                className="wikibox-field-input"
                                 type="text"
                                 value={field.value.first}
                                 onChange={(e) => {
@@ -1959,7 +1959,7 @@ const ElectionBuilder = () => {
                                 }}
                                 />
                               <textarea
-                                className="wikibox-field-input wikibox-date-input"
+                                className="wikibox-field-input"
                                 type="text"
                                 value={field.value.last}
                                 onChange={(e) => {
@@ -1976,7 +1976,7 @@ const ElectionBuilder = () => {
                           return (
                             <>
                               <input
-                                className="wikibox-field-input wikibox-date-input"
+                                className="wikibox-field-input"
                                 type="text"
                                 value={field.value.first}
                                 onChange={(e) => {
@@ -1996,7 +1996,7 @@ const ElectionBuilder = () => {
                                 placeholder="Enter text here"
                               />
                               <input
-                                className="wikibox-field-input wikibox-date-input"
+                                className="wikibox-field-input"
                                 type="text"
                                 value={field.value.last}
                                 onChange={(e) => {
