@@ -684,7 +684,7 @@ const BiographyBuilder = () => {
         <>
           <tr key={field.id} className="wikibox-preview-row">
             <td className="wikibox-preview-label">
-              {field.label}
+              {parseTextWithSpans(field.label)}
             </td>
             <td className="wikibox-preview-value-container">
               {renderPreviewValue(field)}
@@ -812,7 +812,7 @@ const BiographyBuilder = () => {
                       <input
                         className="wikibox-field-label-input"
                         type="text"
-                        value={field.label}
+                        value={parseTextWithSpans(field.label)}
                         onChange={(e) => updateFieldLabel(field.id, e.target.value)}
                         style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none' }}
                       />

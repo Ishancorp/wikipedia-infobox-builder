@@ -7,7 +7,7 @@ table.wikibox-preview {
     color: black;
     font-size: 0.77em;
     line-height: 1.5em;
-    width: 22em;
+    min-width: 22em;
     margin: 0 0 0.5em 1em;
     border-collapse: collapse;
 }
@@ -37,6 +37,7 @@ td.wikibox-preview-value-container {
     white-space: pre-wrap;
     padding-top: 1px;
     padding-bottom: 1px;
+    text-align: center;
 }
 
 td.wikibox-preview-value-single-container {
@@ -142,4 +143,17 @@ span.linktext {
 
 .wikibox-preview-treelist li:last-child::after {
     bottom: 0.3em;
+}
+
+.wikibox-preview-wrapper-electoral {
+    border-spacing: 0;
+    padding: 0;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.wikibox-preview-wrapper-electoral-table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    min-width: 22em;
 }

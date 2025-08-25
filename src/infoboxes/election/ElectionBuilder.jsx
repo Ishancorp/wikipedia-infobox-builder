@@ -24,6 +24,7 @@ const ElectionBuilder = () => {
         { type: 'singletext', label: 'Single Text', value: '*Opinion polls*'},
       ]
     },
+    { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
     { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
@@ -32,6 +33,7 @@ const ElectionBuilder = () => {
     { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
     { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
     { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
+    { type: 'inlineimage', position: 'normal', label: 'Inline Image', icon: '🖼️' },
     { type: 'date', position: 'normal', label: 'Date', icon: '📅' },
     { type: 'list', position: 'normal', label: 'List', icon: '📋' },
     { type: 'treelist', position: 'normal', label: 'Tree List', icon: '📋' },
@@ -64,7 +66,8 @@ const ElectionBuilder = () => {
           caption: "",
           showCaption: false,
           parentGroup: null,
-          children: draggedItem.type === 'group' ? [] : undefined,
+          children: draggedItem.type === 'group' || draggedItem.type === 'electoral' ? [] : undefined,
+          columns: draggedItem.type === 'electoral' ? 1 : undefined,
           isCollapsed: false
         };
       }
@@ -82,12 +85,14 @@ const ElectionBuilder = () => {
       case 'electionheader': return {first: '', middle: '', last: ''};
       case 'subheader': return '';
       case 'image': return '';
+      case 'inlineimage': return '';
       case 'thumbnail': return '';
       case 'date': return new Date().toLocaleDateString();
       case 'list': return ['Item 1', 'Item 2'];
       case 'treelist': return ['Item 1', 'Item 2'];
       case 'link': return { text: 'Link Text', url: 'https://example.com' };
       case 'group': return 'Group Title';
+      case 'electoral': return { title: 'Electoral Title', columns: 1 };
       default: return '';
     }
   };// Add this helper before the component return
@@ -97,23 +102,59 @@ const ElectionBuilder = () => {
     const placeholder = "__AST__";
     const safeText = text.replace(/\\\*/g, placeholder);
 
-    // Split by *...*, ''...'', and '''...''' sections
-    const parts = safeText.split(/(\*[^*]+\*|''[^'']+''|'''[^']+''')/g);
+    const parseSegment = (segment) => {
+      // Find the first occurrence of any marker
+      const markers = [
+        { regex: /\*([^*]+)\*/, className: "linktext", length: 1 },
+        { regex: /'''([^']+)'''/, tag: "strong", length: 3 },
+        { regex: /''([^'']+)''/, tag: "em", length: 2 }
+      ];
 
-    return parts.map((part, i) => {
-      if (/^\*[^*]+\*$/.test(part)) {
-        // Remove * and wrap in span
-        return <span className="linktext" key={i}>{part.slice(1, -1)}</span>;
-      } else if (/^''[^'']+''$/.test(part)) {
-        // Remove '' and wrap in <em> for italic
-        return <em key={i}>{part.slice(2, -2)}</em>;
-      } else if (/^'''[^']+'''$/.test(part)) {
-        // Remove ''' and wrap in <strong> for bold
-        return <strong key={i}>{part.slice(3, -3)}</strong>;
+      // Find the earliest marker
+      let earliestMatch = null;
+      let earliestIndex = Infinity;
+      let matchedMarker = null;
+
+      markers.forEach(marker => {
+        const match = segment.match(marker.regex);
+        if (match && match.index < earliestIndex) {
+          earliestMatch = match;
+          earliestIndex = match.index;
+          matchedMarker = marker;
+        }
+      });
+
+      if (!earliestMatch) {
+        // No markers found, return plain text with placeholders restored
+        return segment.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
       }
-      // Restore escaped asterisks
-      return part.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
-    });
+
+      const beforeMatch = segment.slice(0, earliestIndex);
+      const matchedText = earliestMatch[1]; // Content inside the markers
+      const afterMatch = segment.slice(earliestIndex + earliestMatch[0].length);
+
+      // Recursively parse the content inside the markers
+      const parsedInner = parseSegment(matchedText);
+      
+      // Create the appropriate element
+      let wrappedContent;
+      if (matchedMarker.className) {
+        wrappedContent = <span className={matchedMarker.className}>{parsedInner}</span>;
+      } else {
+        const Tag = matchedMarker.tag;
+        wrappedContent = <Tag>{parsedInner}</Tag>;
+      }
+
+      return (
+        <>
+          {beforeMatch && parseSegment(beforeMatch)}
+          {wrappedContent}
+          {afterMatch && parseSegment(afterMatch)}
+        </>
+      );
+    };
+
+    return parseSegment(safeText);
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
@@ -390,6 +431,28 @@ const ElectionBuilder = () => {
           </div>
         );
       
+      case 'inlineimage':
+        return (
+          <div className="wikibox-image-container">
+            <input
+              className="wikibox-field-input wikibox-image-input"
+              type="url"
+              placeholder="Image URL"
+              value={field.value}
+              onChange={(e) => updateField(field.id, e.target.value)}
+            />
+            {field.value && (
+              <img 
+                className="wikibox-image"
+                src={field.value} 
+                alt="wikibox" 
+                style={{ maxWidth: '50px', height: 'auto', marginBottom: '4px' }}
+                onError={(e) => e.target.style.display = 'none'}
+              />
+            )}
+          </div>
+        );
+      
       case 'treelist':
       case 'list':
         return (
@@ -448,10 +511,27 @@ const ElectionBuilder = () => {
           </div>
         );
       
-      case 'group':
+      case 'electoral':
         return (
           <div className="wikibox-group-container">
             <div className="wikibox-group-header">
+              <input
+                className="wikibox-field-input"
+                type="number"
+                value={field.value.columns}
+                onChange={(e) => {
+                  const newList = {...field.value};
+                  newList.columns = e.target.value;
+                  if (newList.columns < field.value.columns) {
+                    //696969696969696969
+                  }
+                  else {
+                    //696969696969696969
+                  }
+                  updateField(field.id, newList);
+                }}
+                style={{ flex: 1 }}
+              />
               <button
                 onClick={() => toggleGroupCollapse(field.id)}
                 style={{ padding: '4px 8px', background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer' }}
@@ -467,7 +547,7 @@ const ElectionBuilder = () => {
                 onDrop={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (draggedItem && draggedItem.type !== 'group') {
+                  if (draggedItem && draggedItem.position === 'normal') {
                     addFieldToGroup(field.id, draggedItem);
                     setDraggedItem(null);
                   }
@@ -633,6 +713,308 @@ const ElectionBuilder = () => {
                             </div>
                           );
                         
+                        case 'inlineimage':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="Image URL"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                style={{ marginBottom: '4px' }}
+                              />
+                              {child.value && (
+                                <img 
+                                  src={child.value} 
+                                  alt="preview" 
+                                  style={{ maxWidth: '100px', height: 'auto' }}
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
+                          );
+                        
+                        case 'treelist':
+                        case 'list':
+                          return (
+                            <div>
+                              {child.value.map((item, index) => (
+                                <div key={index} style={{ display: 'flex', marginBottom: '2px' }}>
+                                  <input
+                                    type="text"
+                                    value={item}
+                                    onChange={(e) => {
+                                      const newList = [...child.value];
+                                      newList[index] = e.target.value;
+                                      updateGroupChild(field.id, child.id, newList);
+                                    }}
+                                    style={{ flex: 1, padding: '2px', border: '1px solid #ccc', marginRight: '4px' }}
+                                  />
+                                  <button
+                                    className='remove-btn'
+                                    onClick={() => {
+                                      const newList = child.value.filter((_, i) => i !== index);
+                                      updateGroupChild(field.id, child.id, newList);
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                className="wikibox-list-add-btn"
+                                onClick={() => updateGroupChild(field.id, child.id, [...child.value, 'New item'])}
+                              >
+                                + Add Item
+                              </button>
+                            </div>
+                          );
+                        
+                        case 'link':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="text"
+                                placeholder="Link text"
+                                value={child.value.text}
+                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, text: e.target.value })}
+                                style={{ marginBottom: '2px' }}
+                              />
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="URL"
+                                value={child.value.url}
+                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, url: e.target.value })}
+                              />
+                            </div>
+                          );
+                        
+                        default:
+                          return <span>{child.value}</span>;
+                      }
+                    })()}
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                  Drop fields here to add to group
+                </div>
+              )}
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'group':
+        return (
+          <div className="wikibox-group-container">
+            <div className="wikibox-group-header">
+              <button
+                onClick={() => toggleGroupCollapse(field.id)}
+                style={{ padding: '4px 8px', background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer' }}
+              >
+                {field.isCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
+            
+            {!field.isCollapsed && (
+              <div 
+                className="wikibox-group-drop-zone"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (draggedItem && draggedItem.type !== 'group' && draggedItem.type !== 'electoral') {
+                    addFieldToGroup(field.id, draggedItem);
+                    setDraggedItem(null);
+                  }
+                }}
+                style={{ 
+                  minHeight: '100px', 
+                  border: '1px dashed #999', 
+                  padding: '8px', 
+                  background: '#f9f9f9',
+                  marginBottom: '8px'
+                }}
+              >
+              {field.children && field.children.length > 0 ? (
+                field.children.map((child, childIndex) => (
+                  <div key={child.id} style={{ marginBottom: '8px', padding: '8px', background: 'white', border: '1px solid #ddd' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <input
+                        type="text"
+                        value={child.label}
+                        onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
+                        style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
+                      />
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {childIndex > 0 && (
+                          <button
+                            className='move-btn'
+                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
+                          >
+                            ↑
+                          </button>
+                        )}
+                        {childIndex < field.children.length - 1 && (
+                          <button
+                            className='move-btn'
+                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
+                          >
+                            ↓
+                          </button>
+                        )}
+                        <button
+                          className='remove-btn'
+                          onClick={() => removeFieldFromGroup(field.id, child.id)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                    {/* Rest of the child rendering code stays the same */}
+                    {(() => {
+                      switch (child.type) {
+                        case 'text':
+                        case 'singletext':
+                          return (
+                            <textarea
+                              className="wikibox-field-input"
+                              value={child.value}
+                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                              placeholder="Enter text here"
+                            />
+                          );
+      
+                        case 'line':
+                          return (<></>);
+
+                        
+                        case 'electionheader':
+                          return (
+                            <>
+                              <input
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.first}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(child.value));
+                                newList.first = e.target.value;
+                                updateGroupChild(field.id, child.id, newList);
+                                }}
+                                />
+                              <textarea
+                                className="wikibox-field-input"
+                                value={field.value.middle}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(child.value));
+                                newList.middle = e.target.value;
+                                updateGroupChild(field.id, child.id, newList);
+                                }}
+                                placeholder="Enter text here"
+                              />
+                              <input
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.last}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(field.value));
+                                newList.last = e.target.value;
+                                updateGroupChild(field.id, newList);
+                                }}
+                              />
+                            </>
+                          );
+                        
+                        case 'subheader':
+                          return (
+                            <input
+                              className="wikibox-field-input"
+                              type='text'
+                              value={child.value}
+                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                            />
+                          );
+                        
+                        case 'date':
+                          return (
+                            <input
+                              className="wikibox-field-input"
+                              type="date"
+                              value={child.value}
+                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                            />
+                          );
+                        
+                        case 'thumbnail':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="Image URL"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                style={{ marginBottom: '4px' }}
+                              />
+                              {child.value && (
+                                <img 
+                                  src={child.value} 
+                                  alt="preview" 
+                                  style={{ maxWidth: '50px', height: 'auto' }}
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
+                          );
+                        
+                        case 'image':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="Image URL"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                style={{ marginBottom: '4px' }}
+                              />
+                              {child.value && (
+                                <img 
+                                  src={child.value} 
+                                  alt="preview" 
+                                  style={{ maxWidth: '100px', height: 'auto' }}
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
+                          );
+                        
+                        case 'inlineimage':
+                          return (
+                            <div>
+                              <input
+                                className="wikibox-field-input"
+                                type="url"
+                                placeholder="Image URL"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                style={{ marginBottom: '4px' }}
+                              />
+                              {child.value && (
+                                <img 
+                                  src={child.value} 
+                                  alt="preview" 
+                                  style={{ maxWidth: '50px', height: 'auto' }}
+                                  onError={(e) => e.target.style.display = 'none'}
+                                />
+                              )}
+                            </div>
+                          );
+                        
                         case 'treelist':
                         case 'list':
                           return (
@@ -752,6 +1134,24 @@ const ElectionBuilder = () => {
           </div>
         ) : 'No image';
       
+      case 'inlineimage':
+        return field.value ? (
+          <div style={{ textAlign: 'center' }}>
+            <img 
+              className="wikibox-preview-image"
+              src={field.value} 
+              alt="Preview" 
+              style={{ maxWidth: '150px', height: 'auto' }}
+              onError={(e) => e.target.style.display = 'none'}
+            />
+            {field.showCaption && field.caption && (
+              <div className="wikibox-preview-caption">
+                {parseTextWithSpans(field.caption)}
+              </div>
+            )}
+          </div>
+        ) : 'No image';
+      
       case 'list':
         return (
           <ul className="wikibox-preview-list" style={{ margin: 0, paddingLeft: '16px' }}>
@@ -790,6 +1190,13 @@ const ElectionBuilder = () => {
             ))
           );
       
+      case 'electoral':
+        return (
+            field.children && field.children.map((child) => (
+              renderPreviewValue(child)
+            ))
+          );
+      
       case 'electionheader':
       return <>
         {field.value.first && <div>← {parseTextWithSpans(field.value.first)}</div>}
@@ -808,7 +1215,7 @@ const ElectionBuilder = () => {
         <>
           <tr key={field.id} className="wikibox-preview-row">
             <td className="wikibox-preview-label">
-              {field.label}
+              {parseTextWithSpans(field.label)}
             </td>
             <td className="wikibox-preview-value-container">
               {renderPreviewValue(field)}
@@ -918,6 +1325,43 @@ const ElectionBuilder = () => {
         })
       );
     }
+    else if (field.position === 'electoral') {
+      if (!field.children || field.children.length <= 0) {
+        return null;
+      }
+
+      const columns = parseInt(field.value.columns) || 1;
+      
+      return (
+        <>
+          <tr>
+            <td colSpan="2" className="wikibox-preview-wrapper-electoral">
+              <table className="wikibox-preview-wrapper-electoral-table">
+                <tbody>
+                  {field.children && field.children.map((child) => (
+                    <React.Fragment key={child.id}>
+                      <tr className="wikibox-preview-row">
+                        <td className="wikibox-preview-label">
+                          {parseTextWithSpans(child.label)}
+                        </td>
+                        {Array.from({ length: columns }).map((_, i) => (
+                          <td className="wikibox-preview-value-container">
+                            {renderPreviewValue(child)}
+                          </td>
+                        ))}
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td colSpan="2" className="middle"></td>
+          </tr>
+        </>
+      );
+    }
   };
 
   return (
@@ -997,7 +1441,7 @@ const ElectionBuilder = () => {
                       <input
                         className="wikibox-field-label-input"
                         type="text"
-                        value={field.label}
+                        value={parseTextWithSpans(field.label)}
                         onChange={(e) => updateFieldLabel(field.id, e.target.value)}
                         style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none' }}
                       />
