@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import './ElectionBuilderPreview.css';
 import '../css/WikiboxBuilderField.css';
+import { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } from '../helpers/helpers.js'
 
 const ElectionBuilder = () => {
   const [fields, setFields] = useState([]);
@@ -176,6 +177,52 @@ const ElectionBuilder = () => {
       ],
       isCollapsed: false
     },
+    { 
+      type: 'group-template', 
+      position: 'group', 
+      label: 'Bottom Footer Template', 
+      icon: '📄',
+      isTemplate: true,
+      children: [
+        { 
+          type: 'line', 
+          label: 'Line', 
+          value: '--' 
+        },
+        {
+          type: "image",
+          label: " ",
+          position: "single",
+          value: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/ElectoralCollege2008.svg/2560px-ElectoralCollege2008.svg.png",
+          caption: "Presidential election results map. Blue denotes states won by Obama/Biden and red denotes those won by McCain/Palin. Numbers indicate *electoral votes* cast by each state and the District of Columbia.", 
+          showCaption: true,
+          columnIndex: 1
+        },
+        { 
+          type: 'line', 
+          label: 'Line', 
+          value: '--' 
+        },
+        { 
+          type: 'electionfooter', 
+          position: 'binary', 
+          value: {
+            first: '\'\'\'President before election\'\'\'', 
+            middle: '', 
+            last: '\'\'\'Elected President\'\'\''
+          } 
+        },
+        { 
+          type: 'electionfooter', 
+          position: 'binary', 
+          value: {
+            first: '*George W. Bush*\n*Republican*', 
+            middle: '', 
+            last: '*Barack Obama*\n*Democratic*'
+          } 
+        },
+      ]
+    },
     { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
@@ -255,8 +302,8 @@ const ElectionBuilder = () => {
           label: draggedItem.label,
           position: draggedItem.position,
           value: getDefaultValue(draggedItem.type),
-          caption: "",
-          showCaption: false,
+          caption: draggedItem.caption || "",
+          showCaption: draggedItem.showCaption || false,
           parentGroup: null,
           children: draggedItem.type === 'group' || draggedItem.type === 'electoral' ? [] : undefined,
           columns: draggedItem.type === 'electoral' ? 1 : undefined,
@@ -291,86 +338,6 @@ const ElectionBuilder = () => {
     }
   };// Add this helper before the component return
 
-  const parseTextWithSpans = (text) => {
-    // Replace escaped asterisks with a placeholder
-    const placeholder = "__AST__";
-    const safeText = text.replace(/\\\*/g, placeholder);
-
-    const parseSegment = (segment) => {
-      // Find the first occurrence of any marker
-      const markers = [
-        { regex: /\*([^*]+)\*/, className: "linktext", length: 1 },
-        { regex: /'''([^']+)'''/, tag: "strong", length: 3 },
-        { regex: /''([^'']+)''/, tag: "em", length: 2 }
-      ];
-
-      // Find the earliest marker
-      let earliestMatch = null;
-      let earliestIndex = Infinity;
-      let matchedMarker = null;
-
-      markers.forEach(marker => {
-        const match = segment.match(marker.regex);
-        if (match && match.index < earliestIndex) {
-          earliestMatch = match;
-          earliestIndex = match.index;
-          matchedMarker = marker;
-        }
-      });
-
-      if (!earliestMatch) {
-        // No markers found, return plain text with placeholders restored
-        return segment.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
-      }
-
-      const beforeMatch = segment.slice(0, earliestIndex);
-      const matchedText = earliestMatch[1]; // Content inside the markers
-      const afterMatch = segment.slice(earliestIndex + earliestMatch[0].length);
-
-      // Recursively parse the content inside the markers
-      const parsedInner = parseSegment(matchedText);
-      
-      // Create the appropriate element
-      let wrappedContent;
-      if (matchedMarker.className) {
-        wrappedContent = <span className={matchedMarker.className}>{parsedInner}</span>;
-      } else {
-        const Tag = matchedMarker.tag;
-        wrappedContent = <Tag>{parsedInner}</Tag>;
-      }
-
-      return (
-        <>
-          {beforeMatch && parseSegment(beforeMatch)}
-          {wrappedContent}
-          {afterMatch && parseSegment(afterMatch)}
-        </>
-      );
-    };
-
-    return parseSegment(safeText);
-  };
-
-  const handleImageUpload = (file, fieldId, updateFunction) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateFunction(fieldId, e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleGroupImageUpload = (file, groupId, childId, updateGroupChildFunction) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateGroupChildFunction(groupId, childId, e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const toggleImageInputMode = (fieldId) => {
     setImageInputModes(prev => ({
       ...prev,
@@ -393,8 +360,8 @@ const ElectionBuilder = () => {
       label: fieldType.label,
       position: fieldType.position,
       value: getDefaultValue(fieldType.type),
-      caption: "",
-      showCaption: false,
+      caption: fieldType.caption || "",
+      showCaption: fieldType.showCaption || false,
       parentGroup: groupId,
       // Add columnIndex for electoral fields
       ...(isElectoral && { columnIndex: electoralColumnViews[groupId] || 0 })
@@ -581,8 +548,8 @@ const ElectionBuilder = () => {
         label: child.label,
         position: child.position || (child.type === 'subheader' ? 'subheader' : child.type === 'singletext' ? 'single' : 'normal'),
         value: child.value || getDefaultValue(child.type),
-        caption: "",
-        showCaption: false,
+        caption: child.caption || "",
+        showCaption: child.showCaption || false,
         parentGroup: baseId
       }))
     };
@@ -1801,6 +1768,7 @@ const ElectionBuilder = () => {
                           );
 
                         case 'image':
+                          console.log(child);
                           return (
                             <div>
                               <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
@@ -1851,6 +1819,34 @@ const ElectionBuilder = () => {
                                   style={{ maxWidth: '100px', height: 'auto' }}
                                   onError={(e) => e.target.style.display = 'none'}
                                 />
+                              )}
+                              {field.value && (
+                                <>
+                                  <img 
+                                    className="wikibox-image"
+                                    src={field.value} 
+                                    alt="wikibox" 
+                                    style={{ maxWidth: '100px', height: 'auto', marginBottom: '4px' }}
+                                    onError={(e) => e.target.style.display = 'none'}
+                                  />
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                    <input
+                                      type="checkbox"
+                                      checked={field.showCaption}
+                                      onChange={(e) => toggleCaption(field.id, e.target.checked)}
+                                    />
+                                    Show Caption
+                                  </label>
+                                  {field.showCaption && (
+                                    <input
+                                      className="wikibox-field-input wikibox-caption-input"
+                                      type="text"
+                                      placeholder="Enter caption"
+                                      value={field.caption}
+                                      onChange={(e) => updateCaption(field.id, e.target.value)}
+                                    />
+                                  )}
+                                </>
                               )}
                             </div>
                           );

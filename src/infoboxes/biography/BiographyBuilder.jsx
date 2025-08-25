@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import './BiographyBuilderPreview.css';
 import '../css/WikiboxBuilderField.css';
+import { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } from '../helpers/helpers.js'
 
 const BiographyBuilder = () => {
   const [fields, setFields] = useState([]);
@@ -116,50 +117,6 @@ const BiographyBuilder = () => {
       default: return '';
     }
   };// Add this helper before the component return
-
-  const parseTextWithSpans = (text) => {
-    // Replace escaped asterisks with a placeholder
-    const placeholder = "__AST__";
-    const safeText = text.replace(/\\\*/g, placeholder);
-
-    // Split by *...*, ''...'', and '''...''' sections
-    const parts = safeText.split(/(\*[^*]+\*|''[^'']+''|'''[^']+''')/g);
-
-    return parts.map((part, i) => {
-      if (/^\*[^*]+\*$/.test(part)) {
-        // Remove * and wrap in span
-        return <span className="linktext" key={i}>{part.slice(1, -1)}</span>;
-      } else if (/^''[^'']+''$/.test(part)) {
-        // Remove '' and wrap in <em> for italic
-        return <em key={i}>{part.slice(2, -2)}</em>;
-      } else if (/^'''[^']+'''$/.test(part)) {
-        // Remove ''' and wrap in <strong> for bold
-        return <strong key={i}>{part.slice(3, -3)}</strong>;
-      }
-      // Restore escaped asterisks
-      return part.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
-    });
-  };
-
-  const handleImageUpload = (file, fieldId, updateFunction) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateFunction(fieldId, e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleGroupImageUpload = (file, groupId, childId, updateGroupChildFunction) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateGroupChildFunction(groupId, childId, e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const toggleImageInputMode = (fieldId) => {
     setImageInputModes(prev => ({
