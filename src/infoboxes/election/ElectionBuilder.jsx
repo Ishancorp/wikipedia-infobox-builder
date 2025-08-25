@@ -19,7 +19,7 @@ const ElectionBuilder = () => {
 
   const fieldTypes = [
     {
-      type: "templates",
+      type: "Templates",
       list: [
         {
           type: 'group-template', 
