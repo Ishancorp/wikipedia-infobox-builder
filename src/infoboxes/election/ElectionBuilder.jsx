@@ -1854,16 +1854,18 @@ const ElectionBuilder = () => {
         {/* Preview */}
         <div className="wikibox-preview-container">
           <h3 className="wikibox-preview-title">Preview</h3>
-          <div className="wikibox-preview-header">{title}</div>
-          <table className="wikibox-preview">
-            <thead>
-              <tr><th colSpan="2" className="wikibox-preview-header"></th></tr>
-            </thead>
-            <tbody className="wikibox-preview-content">
-              {fields.map((field) => renderTableRow(field))}
-              <tr><td colspan="2" className="bottom"></td></tr>
-            </tbody>
-          </table>
+          <div className="wikibox-preview-wrapper">
+            <div className="wikibox-preview-header">{title}</div>
+            <table className="wikibox-preview">
+              <thead>
+                <tr><th colSpan="2" className="wikibox-preview-header"></th></tr>
+              </thead>
+              <tbody className="wikibox-preview-content">
+                {fields.map((field) => renderTableRow(field))}
+                <tr><td colspan="2" className="bottom"></td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

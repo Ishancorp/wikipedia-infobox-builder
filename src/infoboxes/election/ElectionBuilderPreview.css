@@ -157,3 +157,12 @@ span.linktext {
     border-collapse: collapse;
     min-width: 22em;
 }
+
+.wikibox-preview-wrapper {
+    width: fit-content;
+}
+
+.wikibox-preview-header,
+.wikibox-preview {
+    width: 100%;
+}
