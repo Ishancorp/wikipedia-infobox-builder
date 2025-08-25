@@ -30,7 +30,7 @@ const ElectionBuilder = () => {
     },
     {
       type: "electoral-template",
-      label: "Electoral Template",
+      label: "Electoral Template (Presidential)",
       icon: '📄',
       position: "electoral",
       isTemplate: true,
@@ -48,7 +48,7 @@ const ElectionBuilder = () => {
           position: 'normal', 
           label: 'Turnout', 
           value: '61.6%^{*[1]*} 1.5 *pp*' ,
-          columnIndex: 0
+          columnIndex: -1
         },
         {
           type: "inlineimage",
@@ -601,6 +601,14 @@ const ElectionBuilder = () => {
   const renderElectoralChildControls = (field, child, childIndex, currentColumn, columnChildren) => {
     return (
       <div style={{ display: 'flex', gap: '2px' }}>
+        <button
+          className='move-btn'
+          onClick={() => moveFieldBetweenColumns(field.id, child.id, currentColumn, -1)}
+          title="Make header row"
+          style={{ background: child.columnIndex === -1 ? '#ff9800' : '#666' }}
+        >
+          ★
+        </button>
         {childIndex > 0 && (
           <button
             className='move-btn'
@@ -1100,25 +1108,286 @@ const ElectionBuilder = () => {
             </div>
             
             {!field.isCollapsed && (
-              <div 
-                className="wikibox-group-drop-zone"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (draggedItem && draggedItem.position === 'normal') {
-                    addFieldToElectoralColumn(field.id, draggedItem, currentColumn);
-                    setDraggedItem(null);
-                  }
-                }}
-                style={{ 
-                  minHeight: '100px', 
-                  border: '1px dashed #999', 
-                  padding: '8px', 
-                  background: '#f9f9f9',
-                  marginBottom: '8px'
-                }}
-              >
+              <div className="wikibox-group-drop-zone">
+                
+                {/* Header Section - shows fields with columnIndex: -1 */}
+                {field.children.filter(child => child.columnIndex === -1).length > 0 && (
+                  <div style={{ 
+                    background: '#fff3e0', 
+                    padding: '8px', 
+                    marginBottom: '12px', 
+                    borderRadius: '4px',
+                    border: '1px solid #ffb74d'
+                  }}>
+                    <div style={{ 
+                      fontWeight: 'bold', 
+                      marginBottom: '8px', 
+                      color: '#e65100',
+                      fontSize: '12px',
+                      letterSpacing: '0.5px',
+                      textAlign: 'center',
+                    }}>
+                      Header Rows (Full Width)
+                    </div>
+                    
+                    {field.children
+                      .filter(child => child.columnIndex === -1)
+                      .map((headerChild, headerIndex) => (
+                        <div key={headerChild.id} style={{ 
+                          marginBottom: '8px', 
+                          padding: '8px', 
+                          background: 'white', 
+                          border: '1px solid #ddd',
+                          borderRadius: '4px'
+                        }}>
+                          {/* Header controls row */}
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            marginBottom: '4px' 
+                          }}>
+                            <input
+                              type="text"
+                              value={headerChild.label}
+                              onChange={(e) => updateGroupChildLabel(field.id, headerChild.id, e.target.value)}
+                              style={{ 
+                                fontWeight: 'bold', 
+                                border: 'none', 
+                                background: 'transparent', 
+                                outline: 'none', 
+                                flex: 1 
+                              }}
+                              placeholder="Header label"
+                            />
+                            <div style={{ display: 'flex', gap: '2px' }}>
+                              {/* Move up/down within headers */}
+                              {headerIndex > 0 && (
+                                <button
+                                  className='move-btn'
+                                  onClick={() => {
+                                    const headerChildren = field.children.filter(child => child.columnIndex === -1);
+                                    const currentId = headerChild.id;
+                                    const prevId = headerChildren[headerIndex - 1].id;
+                                    // Implement header reordering logic here
+                                  }}
+                                  title="Move header up"
+                                >
+                                  ↑
+                                </button>
+                              )}
+                              {headerIndex < field.children.filter(child => child.columnIndex === -1).length - 1 && (
+                                <button
+                                  className='move-btn'
+                                  onClick={() => {
+                                    // Similar logic for moving down
+                                  }}
+                                  title="Move header down"
+                                >
+                                  ↓
+                                </button>
+                              )}
+                              
+                              {/* Move to column */}
+                              <button
+                                className='move-btn'
+                                onClick={() => moveFieldBetweenColumns(field.id, headerChild.id, -1, 0)}
+                                title="Move to column 1"
+                                style={{ background: '#2196F3' }}
+                              >
+                                →Col
+                              </button>
+                              
+                              {/* Remove */}
+                              <button
+                                className='remove-btn'
+                                onClick={() => removeFieldFromGroup(field.id, headerChild.id)}
+                                title="Remove header"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Header value editing */}
+                          {(() => {
+                            switch (headerChild.type) {
+                              case 'text':
+                              case 'singletext':
+                                return (
+                                  <textarea
+                                    className="wikibox-field-input"
+                                    value={headerChild.value}
+                                    onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                    placeholder="Enter header text"
+                                    style={{ width: '100%', minHeight: '40px' }}
+                                  />
+                                );
+
+                              case 'color':
+                                return (
+                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                      type="color"
+                                      value={headerChild.value}
+                                      onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                      style={{ width: '40px', height: '30px' }}
+                                    />
+                                    <input
+                                      className="wikibox-field-input"
+                                      value={headerChild.value}
+                                      onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                      placeholder="Color code"
+                                      style={{ flex: 1 }}
+                                    />
+                                  </div>
+                                );
+                              
+                              case 'line':
+                                return (
+                                  <div style={{ 
+                                    padding: '4px 8px', 
+                                    background: '#f5f5f5', 
+                                    borderRadius: '2px',
+                                    fontSize: '12px',
+                                    color: '#666',
+                                    fontStyle: 'italic'
+                                  }}>
+                                    Horizontal line separator
+                                  </div>
+                                );
+                              
+                              case 'subheader':
+                                return (
+                                  <textarea
+                                    className="wikibox-field-input"
+                                    value={headerChild.value}
+                                    onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                    placeholder="Subheader text"
+                                    style={{ 
+                                      width: '100%', 
+                                      minHeight: '30px',
+                                      fontWeight: 'bold'
+                                    }}
+                                  />
+                                );
+                              
+                              case 'inlineimage':
+                              case 'image':
+                              case 'thumbnail':
+                                return (
+                                  <div>
+                                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                      <button
+                                        onClick={() => toggleImageInputMode(`${field.id}-${headerChild.id}`)}
+                                        style={{
+                                          padding: '2px 6px',
+                                          fontSize: '10px',
+                                          background: getImageInputMode(`${field.id}-${headerChild.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '2px',
+                                          cursor: 'pointer',
+                                          minWidth: '35px'
+                                        }}
+                                      >
+                                        {getImageInputMode(`${field.id}-${headerChild.id}`) === 'url' ? 'URL' : 'File'}
+                                      </button>
+                                      
+                                      {getImageInputMode(`${field.id}-${headerChild.id}`) === 'url' ? (
+                                        <input
+                                          className="wikibox-field-input"
+                                          type="url"
+                                          placeholder="Image URL"
+                                          value={headerChild.value.startsWith('data:') ? '' : headerChild.value}
+                                          onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                          style={{ flex: 1 }}
+                                        />
+                                      ) : (
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                              handleGroupImageUpload(file, field.id, headerChild.id, updateGroupChild);
+                                            }
+                                          }}
+                                          style={{ flex: 1, fontSize: '10px' }}
+                                        />
+                                      )}
+                                    </div>
+                                    {headerChild.value && (
+                                      <img 
+                                        src={headerChild.value} 
+                                        alt="header preview" 
+                                        style={{ 
+                                          maxWidth: headerChild.type === 'thumbnail' ? '50px' : '100px', 
+                                          height: 'auto',
+                                          display: 'block',
+                                          margin: '4px auto'
+                                        }}
+                                        onError={(e) => e.target.style.display = 'none'}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              
+                              case 'list':
+                              case 'treelist':
+                                return (
+                                  <div>
+                                    {(headerChild.value || []).map((item, index) => (
+                                      <div key={index} style={{ display: 'flex', marginBottom: '2px' }}>
+                                        <input
+                                          className="wikibox-field-input"
+                                          type="text"
+                                          value={item}
+                                          onChange={(e) => {
+                                            const newList = [...(headerChild.value || [])];
+                                            newList[index] = e.target.value;
+                                            updateGroupChild(field.id, headerChild.id, newList);
+                                          }}
+                                          style={{ flex: 1, marginRight: '4px' }}
+                                        />
+                                        <button
+                                          className='remove-btn'
+                                          onClick={() => {
+                                            const newList = (headerChild.value || []).filter((_, i) => i !== index);
+                                            updateGroupChild(field.id, headerChild.id, newList);
+                                          }}
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <button
+                                      className="wikibox-list-add-btn"
+                                      onClick={() => updateGroupChild(field.id, headerChild.id, [...(headerChild.value || []), 'New item'])}
+                                      style={{ fontSize: '11px', padding: '2px 6px' }}
+                                    >
+                                      + Add Item
+                                    </button>
+                                  </div>
+                                );
+                              
+                              default:
+                                return (
+                                  <input
+                                    className="wikibox-field-input"
+                                    value={headerChild.value || ''}
+                                    onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
+                                    placeholder="Enter value"
+                                    style={{ width: '100%' }}
+                                  />
+                                );
+                            }
+                          })()}
+                        </div>
+                      ))
+                    }
+                  </div>
+                )}
                 <div style={{
                   background: '#e3f2fd',
                   padding: '4px 8px',
@@ -2247,8 +2516,12 @@ const ElectionBuilder = () => {
       const columns = parseInt(field.value.columns) || 1;
       ensureColumnData(field, columns);
       
+      // Separate header rows (columnIndex: -1) from regular rows
+      const headerRows = field.children.filter(child => child.columnIndex === -1);
+      const regularChildren = field.children.filter(child => child.columnIndex !== -1);
+      
       const rowGroups = {};
-      field.children.forEach(child => {
+      regularChildren.forEach(child => {
         const rowKey = child.label;
         
         if (!rowGroups[rowKey]) {
@@ -2265,58 +2538,43 @@ const ElectionBuilder = () => {
             <td colSpan="2" className="wikibox-preview-wrapper-electoral">
               <table className="wikibox-preview-wrapper-electoral-table">
                 <tbody>
+                  {/* Render header rows first */}
+                  {headerRows.map((headerChild) => (
+                    <tr key={`header-${headerChild.id}`} className="wikibox-preview-row">
+                      <td className="wikibox-preview-label">
+                        {parseTextWithSpans(headerChild.label)}
+                      </td>
+                      <td colSpan={columns + 1} className="wikibox-preview-value-container">
+                        {headerChild.type === 'color' ? (
+                          <div style={{ height: '6px', backgroundColor: headerChild.value, width: '100%' }}></div>
+                        ) : (
+                          renderPreviewValue(headerChild)
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  
+                  {/* Render regular rows */}
                   {Object.entries(rowGroups).map(([rowLabel, columnData]) => (
                     <tr key={rowLabel} className="wikibox-preview-row">
                       <td className="wikibox-preview-label">
                         {parseTextWithSpans(rowLabel)}
                       </td>
-
-                      {(() => {
-                        const segments = [];
-                        let i = 0;
-
-                        while (i < columns) {
-                          const cellData = columnData[i];
-
-                          if (!cellData) {
-                            // No data: extend previous cell if it exists, else start a placeholder cell
-                            if (segments.length > 0) {
-                              segments[segments.length - 1].span += 1;
-                            } else {
-                              segments.push({
-                                key: i,
-                                span: 1,
-                                content: <span className="empty-cell">—</span>,
-                              });
+                      
+                      {Array.from({ length: columns }).map((_, columnIndex) => (
+                        <td key={columnIndex} className="wikibox-preview-value-container">
+                          {(() => {
+                            const cellData = columnData[columnIndex];
+                            if (!cellData) {
+                              return <span className="empty-cell">—</span>;
                             }
-                          } else {
-                            const content =
-                              cellData.type === "color" ? (
-                                <div style={{ height: "6px", backgroundColor: cellData.value, width: "100%" }} />
-                              ) : (
-                                renderPreviewValue(cellData)
-                              );
-
-                            segments.push({
-                              key: i,
-                              span: 1,
-                              content,
-                            });
-                          }
-
-                          i += 1;
-                        }
-
-                        return segments.map(seg => (
-                          <td
-                            key={seg.key}
-                            className="wikibox-preview-value-container"
-                            colSpan={seg.span}
-                          >
-                            {seg.content}
-                          </td>
-                        ));
-                      })()}
+                            if (cellData.type === 'color') {
+                              return <div style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
+                            }
+                            return renderPreviewValue(cellData);
+                          })()}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
@@ -2328,7 +2586,6 @@ const ElectionBuilder = () => {
           </tr>
         </>
       );
-
     }
   };
 
