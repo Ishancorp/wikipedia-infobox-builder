@@ -7,6 +7,7 @@ const ElectionBuilder = () => {
   const [draggedItem, setDraggedItem] = useState(null);
   const [title, setTitle] = useState('');
   const dragCounter = useRef(0);
+  const [electoralColumnViews, setElectoralColumnViews] = useState({});
 
   const fieldTypes = [
     { 
@@ -92,7 +93,7 @@ const ElectionBuilder = () => {
       case 'treelist': return ['Item 1', 'Item 2'];
       case 'link': return { text: 'Link Text', url: 'https://example.com' };
       case 'group': return 'Group Title';
-      case 'electoral': return { title: 'Electoral Title', columns: 1 };
+      case 'electoral': return { title: 'Electoral Title', columns: 1, columnData: [{}] };
       default: return '';
     }
   };// Add this helper before the component return
@@ -158,6 +159,10 @@ const ElectionBuilder = () => {
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
+    // Find the parent field to determine if it's electoral
+    const parentField = fields.find(field => field.id === groupId);
+    const isElectoral = parentField && parentField.type === 'electoral';
+    
     const newField = {
       id: Date.now(),
       type: fieldType.type,
@@ -166,20 +171,14 @@ const ElectionBuilder = () => {
       value: getDefaultValue(fieldType.type),
       caption: "",
       showCaption: false,
-      parentGroup: groupId
+      parentGroup: groupId,
+      // Add columnIndex for electoral fields
+      ...(isElectoral && { columnIndex: electoralColumnViews[groupId] || 0 })
     };
     
     setFields(fields.map(field => 
       field.id === groupId 
         ? { ...field, children: [...(field.children || []), newField] }
-        : field
-    ));
-  };
-
-  const removeFieldFromGroup = (groupId, fieldId) => {
-    setFields(fields.map(field => 
-      field.id === groupId 
-        ? { ...field, children: field.children.filter(child => child.id !== fieldId) }
         : field
     ));
   };
@@ -198,7 +197,9 @@ const ElectionBuilder = () => {
         ? { 
             ...field, 
             children: field.children.map(child => 
-              child.id === childId ? { ...child, value: newValue } : child
+              child.id === childId 
+                ? { ...child, value: newValue } // columnIndex is preserved automatically
+                : child
             )
           }
         : field
@@ -240,20 +241,87 @@ const ElectionBuilder = () => {
     setFields(newFields);
   };
 
-  const moveFieldInGroup = (groupId, fromIndex, toIndex) => {
+  const moveFieldBetweenColumns = (groupId, fieldId, fromColumn, toColumn) => {
     setFields(fields.map(field => 
       field.id === groupId 
         ? { 
             ...field, 
-            children: (() => {
-              const newChildren = [...field.children];
-              const [movedField] = newChildren.splice(fromIndex, 1);
-              newChildren.splice(toIndex, 0, movedField);
-              return newChildren;
-            })()
+            children: field.children.map(child => 
+              child.id === fieldId 
+                ? { ...child, columnIndex: toColumn }
+                : child
+            )
           }
         : field
     ));
+  };
+
+  const duplicateFieldToColumn = (groupId, fieldId, targetColumn) => {
+    const parentField = fields.find(field => field.id === groupId);
+    const sourceField = parentField.children.find(child => child.id === fieldId);
+    
+    if (!sourceField) return;
+    
+    const duplicatedField = {
+      ...sourceField,
+      id: Date.now(),
+      columnIndex: targetColumn,
+      value: getDefaultValue(sourceField.type) // Start with default value
+    };
+    
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { ...field, children: [...field.children, duplicatedField] }
+        : field
+    ));
+  };
+
+  const moveFieldInGroup = (groupId, fromIndex, toIndex) => {
+    const parentField = fields.find(field => field.id === groupId);
+    const isElectoral = parentField && parentField.type === 'electoral';
+    
+    if (isElectoral) {
+      // For electoral fields, only move within the current column
+      const currentColumn = electoralColumnViews[groupId] || 0;
+      const currentColumnChildren = getElectoralColumnChildren(parentField, currentColumn);
+      
+      if (fromIndex >= currentColumnChildren.length || toIndex >= currentColumnChildren.length) {
+        return; // Invalid indices for current column
+      }
+      
+      // Get all children and find the actual indices of the fields being moved
+      const allChildren = parentField.children || [];
+      const fromField = currentColumnChildren[fromIndex];
+      const toField = currentColumnChildren[toIndex];
+      
+      const actualFromIndex = allChildren.findIndex(child => child.id === fromField.id);
+      const actualToIndex = allChildren.findIndex(child => child.id === toField.id);
+      
+      const newChildren = [...allChildren];
+      const [movedField] = newChildren.splice(actualFromIndex, 1);
+      newChildren.splice(actualToIndex, 0, movedField);
+      
+      setFields(fields.map(field => 
+        field.id === groupId 
+          ? { ...field, children: newChildren }
+          : field
+      ));
+    } else {
+      // For regular groups, use the existing logic
+      setFields(fields.map(field => 
+        field.id === groupId 
+          ? { 
+              ...field, 
+              children: (() => {
+                const newChildren = [...field.children];
+                const [movedField] = newChildren.splice(fromIndex, 1);
+                newChildren.splice(toIndex, 0, movedField);
+                return newChildren;
+              })()
+            }
+          : field
+      ));
+    }
   };
 
   const updateGroupChildLabel = (groupId, childId, newLabel) => {
@@ -262,7 +330,9 @@ const ElectionBuilder = () => {
         ? { 
             ...field, 
             children: field.children.map(child => 
-              child.id === childId ? { ...child, label: newLabel } : child
+              child.id === childId 
+                ? { ...child, label: newLabel } // columnIndex is preserved automatically
+                : child
             )
           }
         : field
@@ -294,6 +364,108 @@ const ElectionBuilder = () => {
     };
     
     return groupField;
+  };
+
+  const ensureColumnData = (field, columnCount) => {
+    const columnData = field.value.columnData || [];
+    while (columnData.length < columnCount) {
+      columnData.push({});
+    }
+    return columnData.slice(0, columnCount);
+  };
+
+  const addFieldToElectoralColumn = (electoralId, fieldType, columnIndex) => {
+    const newField = {
+      id: Date.now(),
+      type: fieldType.type,
+      label: fieldType.label,
+      position: fieldType.position,
+      value: getDefaultValue(fieldType.type),
+      caption: "",
+      showCaption: false,
+      parentGroup: electoralId,
+      columnIndex: columnIndex
+    };
+    
+    setFields(fields.map(field => 
+      field.id === electoralId 
+        ? { ...field, children: [...(field.children || []), newField] }
+        : field
+    ));
+  };
+
+  const getElectoralColumnChildren = (field, columnIndex) => {
+    return (field.children || []).filter(child => 
+      (child.columnIndex ?? 0) === columnIndex
+    );
+  };
+
+  const removeFieldFromGroup = (groupId, fieldId) => {
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { ...field, children: field.children.filter(child => child.id !== fieldId) }
+        : field
+    ));
+  };
+
+  const renderElectoralChildControls = (field, child, childIndex, currentColumn, columnChildren) => {
+    return (
+      <div style={{ display: 'flex', gap: '2px' }}>
+        {/* Standard move up/down within current column */}
+        {childIndex > 0 && (
+          <button
+            className='move-btn'
+            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
+            title="Move up in column"
+          >
+            ↑
+          </button>
+        )}
+        {childIndex < columnChildren.length - 1 && (
+          <button
+            className='move-btn'
+            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
+            title="Move down in column"
+          >
+            ↓
+          </button>
+        )}
+        
+        {/* Column management buttons - only show if multiple columns exist */}
+        {parseInt(field.value.columns) > 1 && (
+          <>
+            <button
+              className='move-btn'
+              onClick={() => duplicateFieldToColumn(field.id, child.id, (currentColumn + 1) % parseInt(field.value.columns))}
+              title="Duplicate to next column"
+            >
+              ⟶
+            </button>
+            
+            {/* Show move to column dropdown if more than 2 columns */}
+            {parseInt(field.value.columns) > 2 && (
+              <select
+                onChange={(e) => moveFieldBetweenColumns(field.id, child.id, currentColumn, parseInt(e.target.value))}
+                value={currentColumn}
+                style={{ fontSize: '10px', padding: '1px' }}
+                title="Move to column"
+              >
+                {Array.from({ length: parseInt(field.value.columns) }).map((_, i) => (
+                  <option key={i} value={i}>Col {i + 1}</option>
+                ))}
+              </select>
+            )}
+          </>
+        )}
+        
+        <button
+          className='remove-btn'
+          onClick={() => removeFieldFromGroup(field.id, child.id)}
+        >
+          ×
+        </button>
+      </div>
+    );
   };
 
   const renderFieldValue = (field) => {
@@ -512,29 +684,93 @@ const ElectionBuilder = () => {
         );
       
       case 'electoral':
+        { const currentColumn = electoralColumnViews[field.id] || 0;
+        const columnCount = parseInt(field.value.columns) || 1;
+        
         return (
           <div className="wikibox-group-container">
             <div className="wikibox-group-header">
               <input
                 className="wikibox-field-input"
                 type="number"
+                min="1"
                 value={field.value.columns}
                 onChange={(e) => {
-                  const newList = {...field.value};
-                  newList.columns = e.target.value;
-                  if (newList.columns < field.value.columns) {
-                    //696969696969696969
-                  }
-                  else {
-                    //696969696969696969
-                  }
-                  updateField(field.id, newList);
+                  const newColumns = parseInt(e.target.value) || 1;
+                  const newColumnData = ensureColumnData(field, newColumns);
+                  updateField(field.id, {
+                    ...field.value,
+                    columns: newColumns,
+                    columnData: newColumnData
+                  });
                 }}
                 style={{ flex: 1 }}
               />
+              
+              {/* Column navigation controls - only show if more than 1 column */}
+              {columnCount > 1 && (
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '4px', 
+                  marginLeft: '8px',
+                  alignItems: 'center'
+                }}>
+                  <button
+                    onClick={() => setElectoralColumnViews({
+                      ...electoralColumnViews,
+                      [field.id]: Math.max(0, currentColumn - 1)
+                    })}
+                    disabled={currentColumn === 0}
+                    style={{ 
+                      padding: '2px 6px', 
+                      fontSize: '12px',
+                      background: currentColumn === 0 ? '#ccc' : '#fff',
+                      border: '1px solid #999',
+                      cursor: currentColumn === 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    ←
+                  </button>
+                  <span style={{ 
+                    padding: '2px 6px', 
+                    fontSize: '12px',
+                    minWidth: '60px',
+                    textAlign: 'center',
+                    background: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '2px'
+                  }}>
+                    Col {currentColumn + 1}/{columnCount}
+                  </span>
+                  <button
+                    onClick={() => setElectoralColumnViews({
+                      ...electoralColumnViews,
+                      [field.id]: Math.min(columnCount - 1, currentColumn + 1)
+                    })}
+                    disabled={currentColumn === columnCount - 1}
+                    style={{ 
+                      padding: '2px 6px', 
+                      fontSize: '12px',
+                      background: currentColumn === columnCount - 1 ? '#ccc' : '#fff',
+                      border: '1px solid #999',
+                      cursor: currentColumn === columnCount - 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+              
               <button
                 onClick={() => toggleGroupCollapse(field.id)}
-                style={{ padding: '4px 8px', background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer' }}
+                style={{ 
+                  padding: '4px 8px', 
+                  background: '#2196F3', 
+                  color: 'white', 
+                  border: 'none', 
+                  cursor: 'pointer',
+                  marginLeft: '8px'
+                }}
               >
                 {field.isCollapsed ? '▼' : '▲'}
               </button>
@@ -548,7 +784,7 @@ const ElectionBuilder = () => {
                   e.preventDefault();
                   e.stopPropagation();
                   if (draggedItem && draggedItem.position === 'normal') {
-                    addFieldToGroup(field.id, draggedItem);
+                    addFieldToElectoralColumn(field.id, draggedItem, currentColumn);
                     setDraggedItem(null);
                   }
                 }}
@@ -560,253 +796,278 @@ const ElectionBuilder = () => {
                   marginBottom: '8px'
                 }}
               >
-              {field.children && field.children.length > 0 ? (
-                field.children.map((child, childIndex) => (
-                  <div key={child.id} style={{ marginBottom: '8px', padding: '8px', background: 'white', border: '1px solid #ddd' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <input
-                        type="text"
-                        value={child.label}
-                        onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
-                        style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
-                      />
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {childIndex > 0 && (
-                          <button
-                            className='move-btn'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
-                          >
-                            ↑
-                          </button>
-                        )}
-                        {childIndex < field.children.length - 1 && (
-                          <button
-                            className='move-btn'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
-                          >
-                            ↓
-                          </button>
-                        )}
-                        <button
-                          className='remove-btn'
-                          onClick={() => removeFieldFromGroup(field.id, child.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-                    {/* Rest of the child rendering code stays the same */}
-                    {(() => {
-                      switch (child.type) {
-                        case 'text':
-                        case 'singletext':
-                          return (
-                            <textarea
-                              className="wikibox-field-input"
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                              placeholder="Enter text here"
-                            />
-                          );
-      
-                        case 'line':
-                          return (<></>);
+                {/* Show header indicating current column */}
+                <div style={{
+                  background: '#e3f2fd',
+                  padding: '4px 8px',
+                  marginBottom: '8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  color: '#1976d2'
+                }}>
+                  Editing Column {currentColumn + 1} of {columnCount}
+                </div>
 
-                        
-                        case 'electionheader':
-                          return (
-                            <>
-                              <input
-                                className="wikibox-field-input wikibox-date-input"
-                                type="text"
-                                value={field.value.first}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(child.value));
-                                newList.first = e.target.value;
-                                updateGroupChild(field.id, child.id, newList);
-                                }}
-                                />
+                {/* Filter and display children for current column only */}
+                {getElectoralColumnChildren(field, currentColumn).length > 0 ? (
+                  getElectoralColumnChildren(field, currentColumn).map((child, childIndex) => (
+                    <div key={child.id} style={{ 
+                      marginBottom: '8px', 
+                      padding: '8px', 
+                      background: 'white', 
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginBottom: '4px' 
+                      }}>
+                        <input
+                          type="text"
+                          value={child.label}
+                          onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
+                          style={{ 
+                            fontWeight: 'bold', 
+                            border: 'none', 
+                            background: 'transparent', 
+                            outline: 'none', 
+                            flex: 1 
+                          }}
+                        />
+                        {renderElectoralChildControls(field, child, childIndex, currentColumn, getElectoralColumnChildren(field, currentColumn))}
+                      </div>
+                      
+                      {/* Render the child field's input based on its type */}
+                      {(() => {
+                        switch (child.type) {
+                          case 'text':
+                          case 'singletext':
+                            return (
                               <textarea
                                 className="wikibox-field-input"
-                                value={field.value.middle}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(child.value));
-                                newList.middle = e.target.value;
-                                updateGroupChild(field.id, child.id, newList);
-                                }}
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
                                 placeholder="Enter text here"
                               />
+                            );
+                          
+                          case 'line':
+                            return (<></>);
+                          
+                          case 'electionheader':
+                            return (
+                              <>
+                                <input
+                                  className="wikibox-field-input wikibox-date-input"
+                                  type="text"
+                                  value={child.value.first || ''}
+                                  onChange={(e) => {
+                                    const newList = JSON.parse(JSON.stringify(child.value));
+                                    newList.first = e.target.value;
+                                    updateGroupChild(field.id, child.id, newList);
+                                  }}
+                                  placeholder="Previous election"
+                                  style={{ marginBottom: '4px' }}
+                                />
+                                <textarea
+                                  className="wikibox-field-input"
+                                  value={child.value.middle || ''}
+                                  onChange={(e) => {
+                                    const newList = JSON.parse(JSON.stringify(child.value));
+                                    newList.middle = e.target.value;
+                                    updateGroupChild(field.id, child.id, newList);
+                                  }}
+                                  placeholder="Current election details"
+                                  style={{ marginBottom: '4px' }}
+                                />
+                                <input
+                                  className="wikibox-field-input wikibox-date-input"
+                                  type="text"
+                                  value={child.value.last || ''}
+                                  onChange={(e) => {
+                                    const newList = JSON.parse(JSON.stringify(child.value));
+                                    newList.last = e.target.value;
+                                    updateGroupChild(field.id, child.id, newList);
+                                  }}
+                                  placeholder="Next election"
+                                />
+                              </>
+                            );
+                          
+                          case 'subheader':
+                            return (
+                              <textarea
+                                className="wikibox-field-input"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                placeholder="Subheader text"
+                              />
+                            );
+                          
+                          case 'date':
+                            return (
                               <input
                                 className="wikibox-field-input wikibox-date-input"
-                                type="text"
-                                value={field.value.last}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(field.value));
-                                newList.last = e.target.value;
-                                updateGroupChild(field.id, newList);
-                                }}
-                              />
-                            </>
-                          );
-                        
-                        case 'subheader':
-                          return (
-                            <input
-                              className="wikibox-field-input"
-                              type='text'
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                            />
-                          );
-                        
-                        case 'date':
-                          return (
-                            <input
-                              className="wikibox-field-input"
-                              type="date"
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                            />
-                          );
-                        
-                        case 'thumbnail':
-                          return (
-                            <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
+                                type="date"
                                 value={child.value}
                                 onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
                               />
-                              {child.value && (
-                                <img 
-                                  src={child.value} 
-                                  alt="preview" 
-                                  style={{ maxWidth: '50px', height: 'auto' }}
-                                  onError={(e) => e.target.style.display = 'none'}
+                            );
+                          
+                          case 'thumbnail':
+                            return (
+                              <div>
+                                <input
+                                  className="wikibox-field-input"
+                                  type="url"
+                                  placeholder="Image URL"
+                                  value={child.value}
+                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                  style={{ marginBottom: '4px' }}
                                 />
-                              )}
-                            </div>
-                          );
-                        
-                        case 'image':
-                          return (
-                            <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
-                              {child.value && (
-                                <img 
-                                  src={child.value} 
-                                  alt="preview" 
-                                  style={{ maxWidth: '100px', height: 'auto' }}
-                                  onError={(e) => e.target.style.display = 'none'}
-                                />
-                              )}
-                            </div>
-                          );
-                        
-                        case 'inlineimage':
-                          return (
-                            <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
-                              {child.value && (
-                                <img 
-                                  src={child.value} 
-                                  alt="preview" 
-                                  style={{ maxWidth: '100px', height: 'auto' }}
-                                  onError={(e) => e.target.style.display = 'none'}
-                                />
-                              )}
-                            </div>
-                          );
-                        
-                        case 'treelist':
-                        case 'list':
-                          return (
-                            <div>
-                              {child.value.map((item, index) => (
-                                <div key={index} style={{ display: 'flex', marginBottom: '2px' }}>
-                                  <input
-                                    type="text"
-                                    value={item}
-                                    onChange={(e) => {
-                                      const newList = [...child.value];
-                                      newList[index] = e.target.value;
-                                      updateGroupChild(field.id, child.id, newList);
-                                    }}
-                                    style={{ flex: 1, padding: '2px', border: '1px solid #ccc', marginRight: '4px' }}
+                                {child.value && (
+                                  <img 
+                                    src={child.value} 
+                                    alt="preview" 
+                                    style={{ maxWidth: '50px', height: 'auto' }}
+                                    onError={(e) => e.target.style.display = 'none'}
                                   />
-                                  <button
-                                    className='remove-btn'
-                                    onClick={() => {
-                                      const newList = child.value.filter((_, i) => i !== index);
-                                      updateGroupChild(field.id, child.id, newList);
-                                    }}
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              ))}
-                              <button
-                                className="wikibox-list-add-btn"
-                                onClick={() => updateGroupChild(field.id, child.id, [...child.value, 'New item'])}
-                              >
-                                + Add Item
-                              </button>
-                            </div>
-                          );
-                        
-                        case 'link':
-                          return (
-                            <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="text"
-                                placeholder="Link text"
-                                value={child.value.text}
-                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, text: e.target.value })}
-                                style={{ marginBottom: '2px' }}
-                              />
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="URL"
-                                value={child.value.url}
-                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, url: e.target.value })}
-                              />
-                            </div>
-                          );
-                        
-                        default:
-                          return <span>{child.value}</span>;
-                      }
-                    })()}
+                                )}
+                              </div>
+                            );
+                          
+                          case 'image':
+                            return (
+                              <div>
+                                <input
+                                  className="wikibox-field-input"
+                                  type="url"
+                                  placeholder="Image URL"
+                                  value={child.value}
+                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                  style={{ marginBottom: '4px' }}
+                                />
+                                {child.value && (
+                                  <img 
+                                    src={child.value} 
+                                    alt="preview" 
+                                    style={{ maxWidth: '100px', height: 'auto' }}
+                                    onError={(e) => e.target.style.display = 'none'}
+                                  />
+                                )}
+                              </div>
+                            );
+                          
+                          case 'inlineimage':
+                            return (
+                              <div>
+                                <input
+                                  className="wikibox-field-input"
+                                  type="url"
+                                  placeholder="Image URL"
+                                  value={child.value}
+                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                  style={{ marginBottom: '4px' }}
+                                />
+                                {child.value && (
+                                  <img 
+                                    src={child.value} 
+                                    alt="preview" 
+                                    style={{ maxWidth: '50px', height: 'auto' }}
+                                    onError={(e) => e.target.style.display = 'none'}
+                                  />
+                                )}
+                              </div>
+                            );
+                          
+                          case 'treelist':
+                          case 'list':
+                            return (
+                              <div>
+                                {(child.value || []).map((item, index) => (
+                                  <div key={index} style={{ display: 'flex', marginBottom: '2px' }}>
+                                    <input
+                                      className="wikibox-field-input"
+                                      type="text"
+                                      value={item}
+                                      onChange={(e) => {
+                                        const newList = [...(child.value || [])];
+                                        newList[index] = e.target.value;
+                                        updateGroupChild(field.id, child.id, newList);
+                                      }}
+                                      style={{ flex: 1, marginRight: '4px' }}
+                                    />
+                                    <button
+                                      className='remove-btn'
+                                      onClick={() => {
+                                        const newList = (child.value || []).filter((_, i) => i !== index);
+                                        updateGroupChild(field.id, child.id, newList);
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  className="wikibox-list-add-btn"
+                                  onClick={() => updateGroupChild(field.id, child.id, [...(child.value || []), 'New item'])}
+                                >
+                                  + Add Item
+                                </button>
+                              </div>
+                            );
+                          
+                          case 'link':
+                            return (
+                              <div>
+                                <input
+                                  className="wikibox-field-input"
+                                  type="text"
+                                  placeholder="Link text"
+                                  value={(child.value || {}).text || ''}
+                                  onChange={(e) => updateGroupChild(field.id, child.id, { 
+                                    ...(child.value || {}), 
+                                    text: e.target.value 
+                                  })}
+                                  style={{ marginBottom: '2px' }}
+                                />
+                                <input
+                                  className="wikibox-field-input"
+                                  type="url"
+                                  placeholder="URL"
+                                  value={(child.value || {}).url || ''}
+                                  onChange={(e) => updateGroupChild(field.id, child.id, { 
+                                    ...(child.value || {}), 
+                                    url: e.target.value 
+                                  })}
+                                />
+                              </div>
+                            );
+                          
+                          default:
+                            return <span>{child.value}</span>;
+                        }
+                      })()}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    color: '#666', 
+                    padding: '20px',
+                    fontStyle: 'italic'
+                  }}>
+                    Drop fields here to add to Column {currentColumn + 1}
                   </div>
-                ))
-              ) : (
-                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-                  Drop fields here to add to group
-                </div>
-              )}
+                )}
               </div>
             )}
           </div>
-        );
+        ); }
       
       case 'group':
         return (
@@ -1331,6 +1592,23 @@ const ElectionBuilder = () => {
       }
 
       const columns = parseInt(field.value.columns) || 1;
+      ensureColumnData(field, columns);
+      
+      // Group children by their labels (this creates rows)
+      // Each row can have multiple columns with different content
+      const rowGroups = {};
+      field.children.forEach(child => {
+        const rowKey = child.label;
+        
+        // Initialize row if it doesn't exist
+        if (!rowGroups[rowKey]) {
+          rowGroups[rowKey] = {};
+        }
+        
+        // Place child in appropriate column (default to column 0 if no columnIndex)
+        const columnIndex = child.columnIndex ?? 0;
+        rowGroups[rowKey][columnIndex] = child;
+      });
       
       return (
         <>
@@ -1338,19 +1616,23 @@ const ElectionBuilder = () => {
             <td colSpan="2" className="wikibox-preview-wrapper-electoral">
               <table className="wikibox-preview-wrapper-electoral-table">
                 <tbody>
-                  {field.children && field.children.map((child) => (
-                    <React.Fragment key={child.id}>
-                      <tr className="wikibox-preview-row">
-                        <td className="wikibox-preview-label">
-                          {parseTextWithSpans(child.label)}
+                  {Object.entries(rowGroups).map(([rowLabel, columnData]) => (
+                    <tr key={rowLabel} className="wikibox-preview-row">
+                      {/* Row label column */}
+                      <td className="wikibox-preview-label">
+                        {parseTextWithSpans(rowLabel)}
+                      </td>
+                      
+                      {/* Data columns - one for each electoral column */}
+                      {Array.from({ length: columns }).map((_, columnIndex) => (
+                        <td key={columnIndex} className="wikibox-preview-value-container">
+                          {columnData[columnIndex] ? 
+                            renderPreviewValue(columnData[columnIndex]) : 
+                            <span className="empty-cell">—</span>
+                          }
                         </td>
-                        {Array.from({ length: columns }).map((_, i) => (
-                          <td className="wikibox-preview-value-container">
-                            {renderPreviewValue(child)}
-                          </td>
-                        ))}
-                      </tr>
-                    </React.Fragment>
+                      ))}
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -1361,6 +1643,7 @@ const ElectionBuilder = () => {
           </tr>
         </>
       );
+
     }
   };
 
