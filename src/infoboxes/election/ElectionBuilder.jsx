@@ -33,10 +33,10 @@ const ElectionBuilder = () => {
       label: "Electoral Template",
       icon: '📄',
       position: "electoral",
-      isTemplate: true, // Add this line
+      isTemplate: true,
       value: {
         title: "Electoral Title",
-        columns: 2, // Fix: was "columns:2," (had comma instead of colon)
+        columns: 2,
         columnData: [{}, {}]
       },
       caption: "", 
@@ -286,17 +286,13 @@ const ElectionBuilder = () => {
     if (draggedItem) {
       let newField;
       
-      // Check if it's a template (including electoral-template)
       if (draggedItem.isTemplate || draggedItem.type === 'electoral-template') {
         if (draggedItem.type === 'electoral-template') {
-          // Handle electoral template specifically
           newField = generateElectoralTemplate(draggedItem);
         } else {
-          // Handle other templates
           newField = generateTemplateGroup(draggedItem);
         }
       } else {
-        // Handle regular fields as before
         newField = {
           id: Date.now(),
           type: draggedItem.type,
@@ -337,7 +333,7 @@ const ElectionBuilder = () => {
       case 'electoral': return { title: 'Electoral Title', columns: 1, columnData: [{}] };
       default: return '';
     }
-  };// Add this helper before the component return
+  };
 
   const toggleImageInputMode = (fieldId) => {
     setImageInputModes(prev => ({
@@ -351,7 +347,6 @@ const ElectionBuilder = () => {
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
-    // Find the parent field to determine if it's electoral
     const parentField = fields.find(field => field.id === groupId);
     const isElectoral = parentField && parentField.type === 'electoral';
     
@@ -364,7 +359,6 @@ const ElectionBuilder = () => {
       caption: fieldType.caption || "",
       showCaption: fieldType.showCaption || false,
       parentGroup: groupId,
-      // Add columnIndex for electoral fields
       ...(isElectoral && { columnIndex: electoralColumnViews[groupId] || 0 })
     };
     
@@ -390,7 +384,7 @@ const ElectionBuilder = () => {
             ...field, 
             children: field.children.map(child => 
               child.id === childId 
-                ? { ...child, value: newValue } // columnIndex is preserved automatically
+                ? { ...child, value: newValue }
                 : child
             )
           }
@@ -458,7 +452,7 @@ const ElectionBuilder = () => {
       ...sourceField,
       id: Date.now(),
       columnIndex: targetColumn,
-      value: getDefaultValue(sourceField.type) // Start with default value
+      value: getDefaultValue(sourceField.type)
     };
     
     setFields(fields.map(field => 
@@ -473,15 +467,13 @@ const ElectionBuilder = () => {
     const isElectoral = parentField && parentField.type === 'electoral';
     
     if (isElectoral) {
-      // For electoral fields, only move within the current column
       const currentColumn = electoralColumnViews[groupId] || 0;
       const currentColumnChildren = getElectoralColumnChildren(parentField, currentColumn);
       
       if (fromIndex >= currentColumnChildren.length || toIndex >= currentColumnChildren.length) {
-        return; // Invalid indices for current column
+        return;
       }
       
-      // Get all children and find the actual indices of the fields being moved
       const allChildren = parentField.children || [];
       const fromField = currentColumnChildren[fromIndex];
       const toField = currentColumnChildren[toIndex];
@@ -499,7 +491,6 @@ const ElectionBuilder = () => {
           : field
       ));
     } else {
-      // For regular groups, use the existing logic
       setFields(fields.map(field => 
         field.id === groupId 
           ? { 
@@ -523,7 +514,7 @@ const ElectionBuilder = () => {
             ...field, 
             children: field.children.map(child => 
               child.id === childId 
-                ? { ...child, label: newLabel } // columnIndex is preserved automatically
+                ? { ...child, label: newLabel }
                 : child
             )
           }
@@ -603,7 +594,6 @@ const ElectionBuilder = () => {
   const renderElectoralChildControls = (field, child, childIndex, currentColumn, columnChildren) => {
     return (
       <div style={{ display: 'flex', gap: '2px' }}>
-        {/* Standard move up/down within current column */}
         {childIndex > 0 && (
           <button
             className='move-btn'
@@ -623,7 +613,6 @@ const ElectionBuilder = () => {
           </button>
         )}
         
-        {/* Column management buttons - only show if multiple columns exist */}
         {parseInt(field.value.columns) > 1 && (
           <>
             <button
@@ -634,7 +623,6 @@ const ElectionBuilder = () => {
               ⟶
             </button>
             
-            {/* Show move to column dropdown if more than 2 columns */}
             {parseInt(field.value.columns) > 2 && (
               <select
                 onChange={(e) => moveFieldBetweenColumns(field.id, child.id, currentColumn, parseInt(e.target.value))}
@@ -1036,7 +1024,6 @@ const ElectionBuilder = () => {
                 style={{ flex: 1 }}
               />
               
-              {/* Column navigation controls - only show if more than 1 column */}
               {columnCount > 1 && (
                 <div style={{ 
                   display: 'flex', 
@@ -1125,7 +1112,6 @@ const ElectionBuilder = () => {
                   marginBottom: '8px'
                 }}
               >
-                {/* Show header indicating current column */}
                 <div style={{
                   background: '#e3f2fd',
                   padding: '4px 8px',
@@ -1139,7 +1125,6 @@ const ElectionBuilder = () => {
                   Editing Column {currentColumn + 1} of {columnCount}
                 </div>
 
-                {/* Filter and display children for current column only */}
                 {getElectoralColumnChildren(field, currentColumn).length > 0 ? (
                   getElectoralColumnChildren(field, currentColumn).map((child, childIndex) => (
                     <div key={child.id} style={{ 
@@ -1170,7 +1155,6 @@ const ElectionBuilder = () => {
                         {renderElectoralChildControls(field, child, childIndex, currentColumn, getElectoralColumnChildren(field, currentColumn))}
                       </div>
                       
-                      {/* Render the child field's input based on its type */}
                       {(() => {
                         switch (child.type) {
                           case 'text':
@@ -1603,7 +1587,6 @@ const ElectionBuilder = () => {
                         </button>
                       </div>
                     </div>
-                    {/* Rest of the child rendering code stays the same */}
                     {(() => {
                       switch (child.type) {
                         case 'text':
@@ -2189,7 +2172,6 @@ const ElectionBuilder = () => {
     else if (field.position === 'group') {
       return (
         field.children && field.children.map((child) => {
-          // Handle any field with 'single' position OR types that should be single-width
           if (child.position === 'single' || child.type === 'line' || child.type === 'singletext') {
             return (
               <>
@@ -2202,7 +2184,6 @@ const ElectionBuilder = () => {
               </>
             );
           }
-          // Handle subheaders specially
           else if (child.position === 'subheader' || child.type === 'subheader') {
             return (
               <tr key={child.id} className="wikibox-preview-row">
@@ -2214,7 +2195,6 @@ const ElectionBuilder = () => {
               </tr>
             );
           }
-          // Handle ternary fields specially
           else if (child.position === 'ternary' || child.type === 'electionheader') {
             return (
               <>
@@ -2239,7 +2219,6 @@ const ElectionBuilder = () => {
               </>
             );
           }
-          // Handle thumbnails and images in groups specially
           else if (child.type === 'thumbnail' || child.type === 'image') {
             return (
               <tr key={child.id} className="wikibox-preview-row">
@@ -2249,7 +2228,6 @@ const ElectionBuilder = () => {
               </tr>
             );
           }
-          // For other field types, use the normal renderTableRow logic
           return renderTableRow(child);
         })
       );
@@ -2262,18 +2240,14 @@ const ElectionBuilder = () => {
       const columns = parseInt(field.value.columns) || 1;
       ensureColumnData(field, columns);
       
-      // Group children by their labels (this creates rows)
-      // Each row can have multiple columns with different content
       const rowGroups = {};
       field.children.forEach(child => {
         const rowKey = child.label;
         
-        // Initialize row if it doesn't exist
         if (!rowGroups[rowKey]) {
           rowGroups[rowKey] = {};
         }
         
-        // Place child in appropriate column (default to column 0 if no columnIndex)
         const columnIndex = child.columnIndex ?? 0;
         rowGroups[rowKey][columnIndex] = child;
       });
@@ -2286,12 +2260,10 @@ const ElectionBuilder = () => {
                 <tbody>
                   {Object.entries(rowGroups).map(([rowLabel, columnData]) => (
                     <tr key={rowLabel} className="wikibox-preview-row">
-                      {/* Row label column */}
                       <td className="wikibox-preview-label">
                         {parseTextWithSpans(rowLabel)}
                       </td>
                       
-                      {/* Data columns - one for each electoral column */}
                       {Array.from({ length: columns }).map((_, columnIndex) => (
                         <td key={columnIndex} className="wikibox-preview-value-container">
                           {(() => {
@@ -2323,7 +2295,6 @@ const ElectionBuilder = () => {
 
   return (
     <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
-      {/* Sidebar */}
       <div className="wikibox-sidebar">
         <h3 className="wikibox-sidebar-title" style={{ marginTop: 0 }}>Field Types</h3>
         <div className="wikibox-field-types">
@@ -2352,9 +2323,7 @@ const ElectionBuilder = () => {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
-        {/* Editor */}
         <div className="wikibox-editor" style={{ flex: 1 }}>
           <h2 className="wikibox-editor-title">Wikibox Editor – Elections</h2>
           
@@ -2437,7 +2406,6 @@ const ElectionBuilder = () => {
           </div>
         </div>
 
-        {/* Preview */}
         <div className="wikibox-preview-container">
           <h3 className="wikibox-preview-title">Preview</h3>
           <div className="wikibox-preview-wrapper">

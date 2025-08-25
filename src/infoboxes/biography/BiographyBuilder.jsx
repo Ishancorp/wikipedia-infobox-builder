@@ -80,11 +80,9 @@ const BiographyBuilder = () => {
     if (draggedItem) {
       let newField;
       
-      // Check if it's a template
       if (draggedItem.isTemplate) {
         newField = generateTemplateGroup(draggedItem);
       } else {
-        // Handle regular fields as before
         newField = {
           id: Date.now(),
           type: draggedItem.type,
@@ -117,7 +115,7 @@ const BiographyBuilder = () => {
       case 'group': return 'Group Title';
       default: return '';
     }
-  };// Add this helper before the component return
+  };
 
   const toggleImageInputMode = (fieldId) => {
     setImageInputModes(prev => ({
@@ -503,7 +501,6 @@ const BiographyBuilder = () => {
                         </button>
                       </div>
                     </div>
-                    {/* Rest of the child rendering code stays the same */}
                     {(() => {
                       switch (child.type) {
                         case 'text':
@@ -794,7 +791,6 @@ const BiographyBuilder = () => {
 
   return (
     <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
-      {/* Sidebar */}
       <div className="wikibox-sidebar">
         <h3 className="wikibox-sidebar-title" style={{ marginTop: 0 }}>Field Types</h3>
         <div className="wikibox-field-types">
@@ -823,9 +819,7 @@ const BiographyBuilder = () => {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
-        {/* Editor */}
         <div className="wikibox-editor" style={{ flex: 1 }}>
           <h2 className="wikibox-editor-title">Wikibox Editor – Biography</h2>
           
@@ -908,7 +902,6 @@ const BiographyBuilder = () => {
           </div>
         </div>
 
-        {/* Preview */}
         <div className="wikibox-preview-container">
           <h3 className="wikibox-preview-title">Preview</h3>
           <table className="wikibox-preview">
