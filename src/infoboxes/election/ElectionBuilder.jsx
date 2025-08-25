@@ -25,6 +25,56 @@ const ElectionBuilder = () => {
         { type: 'singletext', label: 'Single Text', value: '*Opinion polls*'},
       ]
     },
+    {
+      type: "electoral-template",
+      label: "Electoral Template",
+      icon: '📄',
+      position: "electoral",
+      isTemplate: true, // Add this line
+      value: {
+        title: "Electoral Title",
+        columns: 2, // Fix: was "columns:2," (had comma instead of colon)
+        columnData: [{}, {}]
+      },
+      caption: "", 
+      showCaption: false,
+      parentGroup: null,
+      children: [
+        {
+          type: "inlineimage",
+          label: "",
+          position: "normal",
+          value: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Obama_portrait_crop.jpg",
+          caption: "", 
+          showCaption: false,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Nominee', 
+          value: '\'\'\'*Barack Obama*\'\'\'' ,
+          columnIndex: 0
+        },
+        {
+          type: "inlineimage",
+          label: "",
+          position: "normal",
+          value: "https://upload.wikimedia.org/wikipedia/commons/d/d6/John_McCain_official_portrait_2009_%28cropped%29.jpg",
+          caption: "", 
+          showCaption: false,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Nominee', 
+          value: '*John McCain*' ,
+          columnIndex: 1
+        },
+      ],
+      isCollapsed: false
+    },
     { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
@@ -46,6 +96,38 @@ const ElectionBuilder = () => {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
+  const generateElectoralTemplate = (template) => {
+    const baseId = Date.now();
+    const electoralField = {
+      id: baseId,
+      type: 'electoral',
+      label: template.label.replace(' Template', ''),
+      position: 'electoral',
+      value: {
+        title: template.value.title,
+        columns: template.value.columns,
+        columnData: template.value.columnData
+      },
+      caption: template.value.caption || "",
+      showCaption: template.value.showCaption || false,
+      parentGroup: null,
+      isCollapsed: false,
+      children: template.children.map((child, index) => ({
+        id: baseId + index + 1,
+        type: child.type,
+        label: child.label,
+        position: child.position,
+        value: child.value || getDefaultValue(child.type),
+        caption: child.caption || "",
+        showCaption: child.showCaption || false,
+        parentGroup: baseId,
+        columnIndex: child.columnIndex || 0
+      }))
+    };
+    
+    return electoralField;
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     dragCounter.current = 0;
@@ -53,9 +135,15 @@ const ElectionBuilder = () => {
     if (draggedItem) {
       let newField;
       
-      // Check if it's a template
-      if (draggedItem.isTemplate) {
-        newField = generateTemplateGroup(draggedItem);
+      // Check if it's a template (including electoral-template)
+      if (draggedItem.isTemplate || draggedItem.type === 'electoral-template') {
+        if (draggedItem.type === 'electoral-template') {
+          // Handle electoral template specifically
+          newField = generateElectoralTemplate(draggedItem);
+        } else {
+          // Handle other templates
+          newField = generateTemplateGroup(draggedItem);
+        }
       } else {
         // Handle regular fields as before
         newField = {
