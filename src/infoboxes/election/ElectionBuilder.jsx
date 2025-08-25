@@ -2447,19 +2447,7 @@ const ElectionBuilder = () => {
         </>
       );
     }
-    else if (field.position === 'ternary') {
-      return (
-        <>
-          <tr key={field.id} className="wikibox-preview-row">
-            <td colSpan="2" className="wikibox-preview-value-ternary-container">
-              {renderPreviewValue(field)}
-            </td>
-          </tr>
-          <tr><td colSpan="2" className="middle"></td></tr>
-        </>
-      );
-    }
-    else if (field.position === 'binary') {
+    else if (field.position === 'ternary' || field.position === 'binary') {
       return (
         <>
           <tr key={field.id} className="wikibox-preview-row">
