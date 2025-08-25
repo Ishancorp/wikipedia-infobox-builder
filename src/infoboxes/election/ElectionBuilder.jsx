@@ -43,6 +43,13 @@ const ElectionBuilder = () => {
       showCaption: false,
       parentGroup: null,
       children: [
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Turnout', 
+          value: '61.6%^{*[1]*} 1.5 *pp*' ,
+          columnIndex: 0
+        },
         {
           type: "inlineimage",
           label: " ",
@@ -2263,21 +2270,53 @@ const ElectionBuilder = () => {
                       <td className="wikibox-preview-label">
                         {parseTextWithSpans(rowLabel)}
                       </td>
-                      
-                      {Array.from({ length: columns }).map((_, columnIndex) => (
-                        <td key={columnIndex} className="wikibox-preview-value-container">
-                          {(() => {
-                            const cellData = columnData[columnIndex];
-                            if (!cellData) {
-                              return <span className="empty-cell">—</span>;
+
+                      {(() => {
+                        const segments = [];
+                        let i = 0;
+
+                        while (i < columns) {
+                          const cellData = columnData[i];
+
+                          if (!cellData) {
+                            // No data: extend previous cell if it exists, else start a placeholder cell
+                            if (segments.length > 0) {
+                              segments[segments.length - 1].span += 1;
+                            } else {
+                              segments.push({
+                                key: i,
+                                span: 1,
+                                content: <span className="empty-cell">—</span>,
+                              });
                             }
-                            if (cellData.type === 'color') {
-                              return <div height='6' style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
-                            }
-                            return renderPreviewValue(cellData);
-                          })()}
-                        </td>
-                      ))}
+                          } else {
+                            const content =
+                              cellData.type === "color" ? (
+                                <div style={{ height: "6px", backgroundColor: cellData.value, width: "100%" }} />
+                              ) : (
+                                renderPreviewValue(cellData)
+                              );
+
+                            segments.push({
+                              key: i,
+                              span: 1,
+                              content,
+                            });
+                          }
+
+                          i += 1;
+                        }
+
+                        return segments.map(seg => (
+                          <td
+                            key={seg.key}
+                            className="wikibox-preview-value-container"
+                            colSpan={seg.span}
+                          >
+                            {seg.content}
+                          </td>
+                        ));
+                      })()}
                     </tr>
                   ))}
                 </tbody>
