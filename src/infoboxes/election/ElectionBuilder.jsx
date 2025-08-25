@@ -2,6 +2,11 @@ import React, { useState, useRef } from 'react';
 import './ElectionBuilderPreview.css';
 import '../css/WikiboxBuilderField.css';
 import helpers from '../helpers/helpers.jsx'
+import PreviewContainer from '../components/previews/PreviewContainer/PreviewContainer.jsx';
+import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
+import Sidebar from '../components/sidebar/sidebar.jsx';
+import TitleEditor from '../components/title/TitleEditor.jsx';
+import FieldsList from '../components/dropzone/FieldsList.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
@@ -584,6 +589,35 @@ const ElectionBuilder = () => {
     ));
   };
 
+  const moveHeaderField = (fieldId, headerChildId, direction) => {
+    setFields(fields.map(field => 
+      field.id === fieldId 
+        ? { 
+            ...field, 
+            children: (() => {
+              const headerChildren = field.children.filter(child => child.columnIndex === -1);
+              const nonHeaderChildren = field.children.filter(child => child.columnIndex !== -1);
+              
+              const currentIndex = headerChildren.findIndex(child => child.id === headerChildId);
+              const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+              
+              if (targetIndex < 0 || targetIndex >= headerChildren.length) {
+                return field.children; // No change if out of bounds
+              }
+              
+              // Create new header array with swapped positions
+              const newHeaderChildren = [...headerChildren];
+              [newHeaderChildren[currentIndex], newHeaderChildren[targetIndex]] = 
+              [newHeaderChildren[targetIndex], newHeaderChildren[currentIndex]];
+              
+              // Combine headers and non-headers back together
+              return [...newHeaderChildren, ...nonHeaderChildren];
+            })()
+          }
+        : field
+    ));
+  };
+
   const getElectoralColumnChildren = (field, columnIndex) => {
     return (field.children || []).filter(child => 
       (child.columnIndex ?? 0) === columnIndex
@@ -1108,7 +1142,26 @@ const ElectionBuilder = () => {
             </div>
             
             {!field.isCollapsed && (
-              <div className="wikibox-group-drop-zone">
+              <div 
+                className="wikibox-group-drop-zone"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (draggedItem && draggedItem.type !== 'group' && draggedItem.type !== 'electoral') {
+                    const currentColumn = electoralColumnViews[field.id] || 0;
+                    addFieldToElectoralColumn(field.id, draggedItem, currentColumn);
+                    setDraggedItem(null);
+                  }
+                }}
+                style={{ 
+                  minHeight: '100px', 
+                  border: '1px dashed #999', 
+                  padding: '8px', 
+                  background: '#f9f9f9',
+                  marginBottom: '8px'
+                }}
+              >
                 
                 {/* Header Section - shows fields with columnIndex: -1 */}
                 {field.children.filter(child => child.columnIndex === -1).length > 0 && (
@@ -1165,12 +1218,7 @@ const ElectionBuilder = () => {
                               {headerIndex > 0 && (
                                 <button
                                   className='move-btn'
-                                  onClick={() => {
-                                    const headerChildren = field.children.filter(child => child.columnIndex === -1);
-                                    const currentId = headerChild.id;
-                                    const prevId = headerChildren[headerIndex - 1].id;
-                                    // Implement header reordering logic here
-                                  }}
+                                  onClick={() => moveHeaderField(field.id, headerChild.id, 'up')}
                                   title="Move header up"
                                 >
                                   ↑
@@ -1179,9 +1227,7 @@ const ElectionBuilder = () => {
                               {headerIndex < field.children.filter(child => child.columnIndex === -1).length - 1 && (
                                 <button
                                   className='move-btn'
-                                  onClick={() => {
-                                    // Similar logic for moving down
-                                  }}
+                                  onClick={() => moveHeaderField(field.id, headerChild.id, 'down')}
                                   title="Move header down"
                                 >
                                   ↓
@@ -2591,51 +2637,13 @@ const ElectionBuilder = () => {
 
   return (
     <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
-      <div className="wikibox-sidebar">
-        <h3 className="wikibox-sidebar-title" style={{ marginTop: 0 }}>Field Types</h3>
-        <div className="wikibox-field-types">
-          {fieldTypes.map((fieldType) => (
-            <div
-              key={fieldType.type}
-              className="wikibox-field-type-item"
-              draggable
-              onDragStart={(e) => handleDragStart(e, fieldType)}
-              style={{
-                padding: '12px',
-                margin: '8px 0',
-                background: 'white',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                cursor: 'grab',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <span className="wikibox-field-type-icon">{fieldType.icon}</span>
-              <span className="wikibox-field-type-label">{fieldType.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Sidebar fieldTypes={fieldTypes} handleDragStart={handleDragStart}/>
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
         <div className="wikibox-editor" style={{ flex: 1 }}>
           <h2 className="wikibox-editor-title">Wikibox Editor — Elections</h2>
           
-          <div className="wikibox-title-editor" style={{ marginBottom: '20px' }}>
-            <label className="wikibox-title-label" style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>
-              Wikibox Title:
-            </label>
-            <input
-              className="wikibox-title-input"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Wikibox name"
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-            />
-          </div>
+          <TitleEditor title={title} setTitle={setTitle}/>
 
           <div
             className="wikibox-drop-zone"
@@ -2656,67 +2664,26 @@ const ElectionBuilder = () => {
                 Drag field types here to build your wikibox
               </div>
             ) : (
-              <div className="wikibox-fields-list">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="wikibox-field-editor">
-                    <div className="wikibox-field-header">
-                      <input
-                        className="wikibox-field-label-input"
-                        type="text"
-                        value={parseTextWithSpans(field.label)}
-                        onChange={(e) => updateFieldLabel(field.id, e.target.value)}
-                        style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none' }}
-                      />
-                      <div className="wikibox-field-controls">
-                        {index > 0 && (
-                          <button
-                            className="list-move-btn"
-                            onClick={() => moveField(index, index - 1)}
-                          >
-                            ↑
-                          </button>
-                        )}
-                        {index < fields.length - 1 && (
-                          <button
-                            className="list-move-btn"
-                            onClick={() => moveField(index, index + 1)}
-                          >
-                            ↓
-                          </button>
-                        )}
-                        <button
-                          className='remove-btn'
-                          onClick={() => removeField(field.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-                    <div className="wikibox-field-content">
-                      {renderFieldValue(field)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <FieldsList
+                fields={fields}
+                parseTextWithSpans={parseTextWithSpans}
+                updateFieldLabel={updateFieldLabel}
+                moveField={moveField}
+                removeField={removeField}
+                renderFieldValue={renderFieldValue}
+              />
             )}
           </div>
         </div>
 
-        <div className="wikibox-preview-container">
-          <h3 className="wikibox-preview-title">Preview</h3>
+        <PreviewContainer>
           <div className="wikibox-preview-wrapper">
             <div className="wikibox-preview-header">{title}</div>
-            <table className="wikibox-preview">
-              <thead>
-                <tr><th colSpan="2" className="wikibox-preview-header"></th></tr>
-              </thead>
-              <tbody className="wikibox-preview-content">
-                {fields.map((field) => renderTableRow(field))}
-                <tr><td colspan="2" className="bottom"></td></tr>
-              </tbody>
-            </table>
+            <PreviewTable title="">
+              {fields.map((field) => renderTableRow(field))}
+            </PreviewTable>
           </div>
-        </div>
+        </PreviewContainer>
       </div>
     </div>
   );
