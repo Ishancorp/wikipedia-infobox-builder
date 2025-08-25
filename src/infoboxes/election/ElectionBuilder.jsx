@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import './ElectionBuilderPreview.css';
 import '../css/WikiboxBuilderField.css';
-import { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } from '../helpers/helpers.js'
+import helpers from '../helpers/helpers.jsx'
+const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
   const [fields, setFields] = useState([]);
