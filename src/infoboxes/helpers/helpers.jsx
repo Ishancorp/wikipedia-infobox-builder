@@ -38,6 +38,32 @@ const parseTextWithSpans = (text) => {
       return segment.replace(/\\\^/g, "^");
     }
 
+    // Handle {{increase}} and {{decrease}}
+    if (segment.includes("{{increase}}") || segment.includes("{{decrease}}")) {
+      const parts = segment.split(/({{increase}}|{{decrease}})/);
+      return (
+        <>
+          {parts.map((part, i) => {
+            if (part === "{{increase}}") {
+              return (
+                <span key={i} className="increase">
+                  ▲
+                </span>
+              );
+            }
+            if (part === "{{decrease}}") {
+              return (
+                <span key={i} className="decrease">
+                  ▼
+                </span>
+              );
+            }
+            return parseSegment(part); // keep parsing the rest
+          })}
+        </>
+      );
+    }
+
     // Find the first occurrence of any marker
     const markers = [
       { regex: /\*([^*]+)\*/, className: "linktext", length: 1 },
@@ -61,7 +87,9 @@ const parseTextWithSpans = (text) => {
 
     if (!earliestMatch) {
       // No markers found, return plain text with placeholders restored
-      return segment.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "—");
+      return segment
+        .replace(new RegExp(placeholder, "g"), "*")
+        .replace(/--/g, "—");
     }
 
     const beforeMatch = segment.slice(0, earliestIndex);
@@ -69,7 +97,7 @@ const parseTextWithSpans = (text) => {
     const afterMatch = segment.slice(earliestIndex + earliestMatch[0].length);
 
     const parsedInner = parseSegment(matchedText);
-    
+
     let wrappedContent;
     if (matchedMarker.className) {
       wrappedContent = <span className={matchedMarker.className}>{parsedInner}</span>;

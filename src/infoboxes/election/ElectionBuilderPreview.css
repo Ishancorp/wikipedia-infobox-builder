@@ -178,3 +178,11 @@ hr {
     border: 0;
     margin: 0.2em 0;
 }
+
+.increase {
+    color: #70C94B;
+}
+
+.decrease {
+    color: #D93122;
+}

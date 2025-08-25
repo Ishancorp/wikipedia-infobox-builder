@@ -47,7 +47,7 @@ const ElectionBuilder = () => {
           type: 'text', 
           position: 'normal', 
           label: 'Turnout', 
-          value: '61.6%^{*[1]*} 1.5 *pp*' ,
+          value: '61.6%^{*[1]*}{{increase}} 1.5 *pp*' ,
           columnIndex: -1
         },
         {

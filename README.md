@@ -29,6 +29,8 @@ It includes support for text fields, images, links, lists, dates, and prebuilt t
   - Wrap text in '' (double apostrophes) to turn it *italics*
   - Wrap text in ''' (triple apostrophes) to turn it **bold**
   - Wrap text in ^{} (triple apostrophes) to turn it to ˢᵘᵖᵉʳˢᶜʳⁱᵖᵗ
+  - Put {{increase}} to turn it to ▲
+  - Put {{decrease}} to turn it to ▼
 
 ---
 
