@@ -22,12 +22,17 @@ div.wikibox-preview-header {
 }
 
 td.wikibox-preview-label {
-    width: 37%;
+    min-width: 85px;
+    max-width: 85px;
     padding: 8px;
+    padding-right: 0;
     font-weight: bold;
     vertical-align: top;
     padding-top: 1px;
     padding-bottom: 1px;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
 }
 
 td.wikibox-preview-value-container {

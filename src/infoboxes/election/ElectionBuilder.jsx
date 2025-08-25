@@ -8,6 +8,7 @@ const ElectionBuilder = () => {
   const [title, setTitle] = useState('');
   const dragCounter = useRef(0);
   const [electoralColumnViews, setElectoralColumnViews] = useState({});
+  const [imageInputModes, setImageInputModes] = useState({});
 
   const fieldTypes = [
     { 
@@ -42,13 +43,14 @@ const ElectionBuilder = () => {
       children: [
         {
           type: "inlineimage",
-          label: "",
+          label: " ",
           position: "normal",
           value: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Obama_portrait_crop.jpg",
           caption: "", 
           showCaption: false,
           columnIndex: 0
         },
+        { type: 'color', position: 'normal', label: '', value: '#3333FF', columnIndex: 0},
         { 
           type: 'text', 
           position: 'normal', 
@@ -56,20 +58,119 @@ const ElectionBuilder = () => {
           value: '\'\'\'*Barack Obama*\'\'\'' ,
           columnIndex: 0
         },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Party', 
+          value: '*Democratic*' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Home state', 
+          value: '*Illinois*' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Running mate', 
+          value: '\'\'\'*Joe Biden*\'\'\'' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Electoral vote', 
+          value: '\'\'\'365\'\'\'' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'States carried', 
+          value: '\'\'\'28 + *DC* + *NE-02*\'\'\'' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Popular vote', 
+          value: '\'\'\'69,498,516\'\'\'' ,
+          columnIndex: 0
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Percentage', 
+          value: '\'\'\'52.9%\'\'\'' ,
+          columnIndex: 0
+        },
         {
           type: "inlineimage",
-          label: "",
+          label: " ",
           position: "normal",
           value: "https://upload.wikimedia.org/wikipedia/commons/d/d6/John_McCain_official_portrait_2009_%28cropped%29.jpg",
           caption: "", 
           showCaption: false,
           columnIndex: 1
         },
+        { type: 'color', position: 'normal', label: '', value: '#E81B23', columnIndex: 1},
         { 
           type: 'text', 
           position: 'normal', 
           label: 'Nominee', 
           value: '*John McCain*' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Party', 
+          value: '*Republican*' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Home state', 
+          value: '*Arizona*' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Running mate', 
+          value: '*Sarah Palin*' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Electoral vote', 
+          value: '173' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'States carried', 
+          value: '22' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Popular vote', 
+          value: '59,948,323' ,
+          columnIndex: 1
+        },
+        { 
+          type: 'text', 
+          position: 'normal', 
+          label: 'Percentage', 
+          value: '45.7%' ,
           columnIndex: 1
         },
       ],
@@ -78,9 +179,11 @@ const ElectionBuilder = () => {
     { type: 'electoral', position: 'electoral', label: 'Electoral', icon: '📁' },
     { type: 'group', position: 'group', label: 'Group', icon: '📁' },
     { type: 'text', position: 'normal', label: 'Text Field', icon: '📝' },
+    { type: 'color', position: 'normal', label: 'Color', icon: '🔴' },
     { type: 'singletext', position: 'single', label: 'Single Text', icon: '📝' },
     { type: 'line', position: 'single', label: 'Line', icon: '—' },
     { type: 'electionheader', position: 'ternary', label: 'Election Header', icon: '📝' },
+    { type: 'electionfooter', position: 'binary', label: 'Election Footer', icon: '📝' },
     { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
     { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
     { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
@@ -169,9 +272,11 @@ const ElectionBuilder = () => {
   const getDefaultValue = (type) => {
     switch (type) {
       case 'text': return '';
+      case 'color': return '#FFFFFF';
       case 'singletext': return '';
       case 'line': return '';
       case 'electionheader': return {first: '', middle: '', last: ''};
+      case 'electionfooter': return {first: '', middle: '', last: ''};
       case 'subheader': return '';
       case 'image': return '';
       case 'inlineimage': return '';
@@ -244,6 +349,37 @@ const ElectionBuilder = () => {
     };
 
     return parseSegment(safeText);
+  };
+
+  const handleImageUpload = (file, fieldId, updateFunction) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateFunction(fieldId, e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGroupImageUpload = (file, groupId, childId, updateGroupChildFunction) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateGroupChildFunction(groupId, childId, e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const toggleImageInputMode = (fieldId) => {
+    setImageInputModes(prev => ({
+      ...prev,
+      [fieldId]: prev[fieldId] === 'file' ? 'url' : 'file'
+    }));
+  };
+
+  const getImageInputMode = (fieldId) => {
+    return imageInputModes[fieldId] || 'url';
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
@@ -593,6 +729,31 @@ const ElectionBuilder = () => {
             />
           </>
         );
+      case 'electionfooter':
+        return (
+          <>
+            <textarea
+                className="wikibox-field-input wikibox-date-input"
+                type="text"
+                value={field.value.first}
+                onChange={(e) => {
+                  const newList = JSON.parse(JSON.stringify(field.value));
+                  newList.first = e.target.value;
+                  updateField(field.id, newList);
+                }}
+            />
+            <textarea
+                className="wikibox-field-input wikibox-date-input"
+                type="text"
+                value={field.value.last}
+                onChange={(e) => {
+                  const newList = JSON.parse(JSON.stringify(field.value));
+                  newList.last = e.target.value;
+                  updateField(field.id, newList);
+                }}
+            />
+          </>
+        );
       case 'singletext':
       case 'text':
         return (
@@ -601,6 +762,16 @@ const ElectionBuilder = () => {
             value={field.value}
             onChange={(e) => updateField(field.id, e.target.value)}
             placeholder="Enter text here"
+          />
+        );
+      
+      case 'color':
+        return (
+          <input
+            className="wikibox-field-input"
+            value={field.value}
+            onChange={(e) => updateField(field.id, e.target.value)}
+            placeholder="Enter color here"
           />
         );
       
@@ -631,13 +802,47 @@ const ElectionBuilder = () => {
       case 'image':
         return (
           <div className="wikibox-image-container">
-            <input
-              className="wikibox-field-input wikibox-image-input"
-              type="url"
-              placeholder="Image URL"
-              value={field.value}
-              onChange={(e) => updateField(field.id, e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+              <button
+                onClick={() => toggleImageInputMode(field.id)}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  minWidth: '45px'
+                }}
+                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
+              >
+                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
+              </button>
+              
+              {getImageInputMode(field.id) === 'url' ? (
+                <input
+                  className="wikibox-field-input wikibox-image-input"
+                  type="url"
+                  placeholder="Image URL"
+                  value={field.value.startsWith('data:') ? '' : field.value}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  style={{ flex: 1 }}
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImageUpload(file, field.id, updateField);
+                    }
+                  }}
+                  style={{ flex: 1, fontSize: '11px' }}
+                />
+              )}
+            </div>
             {field.value && (
               <>
                 <img 
@@ -668,17 +873,51 @@ const ElectionBuilder = () => {
             )}
           </div>
         );
-      
+
       case 'thumbnail':
         return (
           <div className="wikibox-image-container">
-            <input
-              className="wikibox-field-input wikibox-image-input"
-              type="url"
-              placeholder="Image URL"
-              value={field.value}
-              onChange={(e) => updateField(field.id, e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+              <button
+                onClick={() => toggleImageInputMode(field.id)}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  minWidth: '45px'
+                }}
+                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
+              >
+                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
+              </button>
+              
+              {getImageInputMode(field.id) === 'url' ? (
+                <input
+                  className="wikibox-field-input wikibox-image-input"
+                  type="url"
+                  placeholder="Image URL"
+                  value={field.value.startsWith('data:') ? '' : field.value}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  style={{ flex: 1 }}
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImageUpload(file, field.id, updateField);
+                    }
+                  }}
+                  style={{ flex: 1, fontSize: '11px' }}
+                />
+              )}
+            </div>
             {field.value && (
               <img 
                 className="wikibox-image"
@@ -690,17 +929,51 @@ const ElectionBuilder = () => {
             )}
           </div>
         );
-      
+
       case 'inlineimage':
         return (
           <div className="wikibox-image-container">
-            <input
-              className="wikibox-field-input wikibox-image-input"
-              type="url"
-              placeholder="Image URL"
-              value={field.value}
-              onChange={(e) => updateField(field.id, e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+              <button
+                onClick={() => toggleImageInputMode(field.id)}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  minWidth: '45px'
+                }}
+                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
+              >
+                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
+              </button>
+              
+              {getImageInputMode(field.id) === 'url' ? (
+                <input
+                  className="wikibox-field-input wikibox-image-input"
+                  type="url"
+                  placeholder="Image URL"
+                  value={field.value.startsWith('data:') ? '' : field.value}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  style={{ flex: 1 }}
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImageUpload(file, field.id, updateField);
+                    }
+                  }}
+                  style={{ flex: 1, fontSize: '11px' }}
+                />
+              )}
+            </div>
             {field.value && (
               <img 
                 className="wikibox-image"
@@ -942,9 +1215,48 @@ const ElectionBuilder = () => {
                                 placeholder="Enter text here"
                               />
                             );
+
+                          case 'color':
+                            return (
+                              <input
+                                className="wikibox-field-input"
+                                value={child.value}
+                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                placeholder="Enter text here"
+                              />
+                            );
                           
                           case 'line':
                             return (<></>);
+                          
+                          case 'electionfooter':
+                            return (
+                              <>
+                                <textarea
+                                  className="wikibox-field-input wikibox-date-input"
+                                  type="text"
+                                  value={child.value.first || ''}
+                                  onChange={(e) => {
+                                    const newList = JSON.parse(JSON.stringify(child.value));
+                                    newList.first = e.target.value;
+                                    updateGroupChild(field.id, child.id, newList);
+                                  }}
+                                  placeholder="Previous election"
+                                  style={{ marginBottom: '4px' }}
+                                />
+                                <textarea
+                                  className="wikibox-field-input wikibox-date-input"
+                                  type="text"
+                                  value={child.value.last || ''}
+                                  onChange={(e) => {
+                                    const newList = JSON.parse(JSON.stringify(child.value));
+                                    newList.last = e.target.value;
+                                    updateGroupChild(field.id, child.id, newList);
+                                  }}
+                                  placeholder="Next election"
+                                />
+                              </>
+                            );
                           
                           case 'electionheader':
                             return (
@@ -1009,14 +1321,47 @@ const ElectionBuilder = () => {
                           case 'thumbnail':
                             return (
                               <div>
-                                <input
-                                  className="wikibox-field-input"
-                                  type="url"
-                                  placeholder="Image URL"
-                                  value={child.value}
-                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                  style={{ marginBottom: '4px' }}
-                                />
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                    style={{
+                                      padding: '2px 6px',
+                                      fontSize: '10px',
+                                      background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '2px',
+                                      cursor: 'pointer',
+                                      minWidth: '35px'
+                                    }}
+                                    title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                  >
+                                    {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                  </button>
+                                  
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                    <input
+                                      className="wikibox-field-input"
+                                      type="url"
+                                      placeholder="Image URL"
+                                      value={child.value.startsWith('data:') ? '' : child.value}
+                                      onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                      style={{ flex: 1 }}
+                                    />
+                                  ) : (
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                          handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                        }
+                                      }}
+                                      style={{ flex: 1, fontSize: '10px' }}
+                                    />
+                                  )}
+                                </div>
                                 {child.value && (
                                   <img 
                                     src={child.value} 
@@ -1027,18 +1372,51 @@ const ElectionBuilder = () => {
                                 )}
                               </div>
                             );
-                          
+
                           case 'image':
                             return (
                               <div>
-                                <input
-                                  className="wikibox-field-input"
-                                  type="url"
-                                  placeholder="Image URL"
-                                  value={child.value}
-                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                  style={{ marginBottom: '4px' }}
-                                />
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                    style={{
+                                      padding: '2px 6px',
+                                      fontSize: '10px',
+                                      background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '2px',
+                                      cursor: 'pointer',
+                                      minWidth: '35px'
+                                    }}
+                                    title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                  >
+                                    {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                  </button>
+                                  
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                    <input
+                                      className="wikibox-field-input"
+                                      type="url"
+                                      placeholder="Image URL"
+                                      value={child.value.startsWith('data:') ? '' : child.value}
+                                      onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                      style={{ flex: 1 }}
+                                    />
+                                  ) : (
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                          handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                        }
+                                      }}
+                                      style={{ flex: 1, fontSize: '10px' }}
+                                    />
+                                  )}
+                                </div>
                                 {child.value && (
                                   <img 
                                     src={child.value} 
@@ -1053,14 +1431,47 @@ const ElectionBuilder = () => {
                           case 'inlineimage':
                             return (
                               <div>
-                                <input
-                                  className="wikibox-field-input"
-                                  type="url"
-                                  placeholder="Image URL"
-                                  value={child.value}
-                                  onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                  style={{ marginBottom: '4px' }}
-                                />
+                                <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                    style={{
+                                      padding: '2px 6px',
+                                      fontSize: '10px',
+                                      background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '2px',
+                                      cursor: 'pointer',
+                                      minWidth: '35px'
+                                    }}
+                                    title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                  >
+                                    {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                  </button>
+                                  
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                    <input
+                                      className="wikibox-field-input"
+                                      type="url"
+                                      placeholder="Image URL"
+                                      value={child.value.startsWith('data:') ? '' : child.value}
+                                      onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                      style={{ flex: 1 }}
+                                    />
+                                  ) : (
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                          handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                        }
+                                      }}
+                                      style={{ flex: 1, fontSize: '10px' }}
+                                    />
+                                  )}
+                                </div>
                                 {child.value && (
                                   <img 
                                     src={child.value} 
@@ -1237,9 +1648,45 @@ const ElectionBuilder = () => {
                               placeholder="Enter text here"
                             />
                           );
+
+                        case 'color':
+                          return (
+                            <input
+                              className="wikibox-field-input"
+                              value={child.value}
+                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                              placeholder="Enter text here"
+                            />
+                          );
       
                         case 'line':
                           return (<></>);
+                        
+                        case 'electionfooter':
+                          return (
+                            <>
+                              <textarea
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.first}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(child.value));
+                                newList.first = e.target.value;
+                                updateGroupChild(field.id, child.id, newList);
+                                }}
+                                />
+                              <textarea
+                                className="wikibox-field-input wikibox-date-input"
+                                type="text"
+                                value={field.value.last}
+                                onChange={(e) => {
+                                const newList = JSON.parse(JSON.stringify(field.value));
+                                newList.last = e.target.value;
+                                updateGroupChild(field.id, newList);
+                                }}
+                              />
+                            </>
+                          );
 
                         
                         case 'electionheader':
@@ -1301,14 +1748,47 @@ const ElectionBuilder = () => {
                         case 'thumbnail':
                           return (
                             <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
+                              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                <button
+                                  onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                  style={{
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
+                                    background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    cursor: 'pointer',
+                                    minWidth: '35px'
+                                  }}
+                                  title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                >
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                </button>
+                                
+                                {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                  <input
+                                    className="wikibox-field-input"
+                                    type="url"
+                                    placeholder="Image URL"
+                                    value={child.value.startsWith('data:') ? '' : child.value}
+                                    onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                    style={{ flex: 1 }}
+                                  />
+                                ) : (
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files[0];
+                                      if (file) {
+                                        handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                      }
+                                    }}
+                                    style={{ flex: 1, fontSize: '10px' }}
+                                  />
+                                )}
+                              </div>
                               {child.value && (
                                 <img 
                                   src={child.value} 
@@ -1319,18 +1799,51 @@ const ElectionBuilder = () => {
                               )}
                             </div>
                           );
-                        
+
                         case 'image':
                           return (
                             <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
+                              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                <button
+                                  onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                  style={{
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
+                                    background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    cursor: 'pointer',
+                                    minWidth: '35px'
+                                  }}
+                                  title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                >
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                </button>
+                                
+                                {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                  <input
+                                    className="wikibox-field-input"
+                                    type="url"
+                                    placeholder="Image URL"
+                                    value={child.value.startsWith('data:') ? '' : child.value}
+                                    onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                    style={{ flex: 1 }}
+                                  />
+                                ) : (
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files[0];
+                                      if (file) {
+                                        handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                      }
+                                    }}
+                                    style={{ flex: 1, fontSize: '10px' }}
+                                  />
+                                )}
+                              </div>
                               {child.value && (
                                 <img 
                                   src={child.value} 
@@ -1345,14 +1858,47 @@ const ElectionBuilder = () => {
                         case 'inlineimage':
                           return (
                             <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
+                              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                <button
+                                  onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                  style={{
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
+                                    background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    cursor: 'pointer',
+                                    minWidth: '35px'
+                                  }}
+                                  title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                >
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                </button>
+                                
+                                {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                  <input
+                                    className="wikibox-field-input"
+                                    type="url"
+                                    placeholder="Image URL"
+                                    value={child.value.startsWith('data:') ? '' : child.value}
+                                    onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                    style={{ flex: 1 }}
+                                  />
+                                ) : (
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files[0];
+                                      if (file) {
+                                        handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                      }
+                                    }}
+                                    style={{ flex: 1, fontSize: '10px' }}
+                                  />
+                                )}
+                              </div>
                               {child.value && (
                                 <img 
                                   src={child.value} 
@@ -1490,14 +2036,9 @@ const ElectionBuilder = () => {
               className="wikibox-preview-image"
               src={field.value} 
               alt="Preview" 
-              style={{ maxWidth: '150px', height: 'auto' }}
+              style={{ maxWidth: '150px', height: 'auto', display: 'block', margin: '0 auto' }}
               onError={(e) => e.target.style.display = 'none'}
             />
-            {field.showCaption && field.caption && (
-              <div className="wikibox-preview-caption">
-                {parseTextWithSpans(field.caption)}
-              </div>
-            )}
           </div>
         ) : 'No image';
       
@@ -1546,6 +2087,12 @@ const ElectionBuilder = () => {
             ))
           );
       
+      case 'electionfooter':
+      return <>
+        {field.value.first && <div style={{textAlign: 'left'}}>{parseTextWithSpans(field.value.first)}</div>}
+        {field.value.last && <div style={{textAlign: 'right'}}>{parseTextWithSpans(field.value.last)}</div>}
+      </>
+      
       case 'electionheader':
       return <>
         {field.value.first && <div>← {parseTextWithSpans(field.value.first)}</div>}
@@ -1560,17 +2107,29 @@ const ElectionBuilder = () => {
 
   const renderTableRow = (field) => {
     if (field.position === 'normal') {
+      console.log(field)
       return (
         <>
           <tr key={field.id} className="wikibox-preview-row">
             <td className="wikibox-preview-label">
               {parseTextWithSpans(field.label)}
             </td>
-            <td className="wikibox-preview-value-container">
-              {renderPreviewValue(field)}
-            </td>
+            {
+              field.type === 'color' ? (
+                <td
+                  className="wikibox-preview-value-container"
+                  style={{ height: '6px', backgroundColor: field.value }}
+                ></td>
+              ) : (
+                <td className="wikibox-preview-value-container">
+                  {renderPreviewValue(field)}
+                </td>
+              )
+            }
           </tr>
-          <tr><td colSpan="2" className="middle"></td></tr>
+          <tr>
+            <td colSpan="2" className="middle"></td>
+          </tr>
         </>
       );
     }
@@ -1587,6 +2146,18 @@ const ElectionBuilder = () => {
       );
     }
     else if (field.position === 'ternary') {
+      return (
+        <>
+          <tr key={field.id} className="wikibox-preview-row">
+            <td colSpan="2" className="wikibox-preview-value-ternary-container">
+              {renderPreviewValue(field)}
+            </td>
+          </tr>
+          <tr><td colSpan="2" className="middle"></td></tr>
+        </>
+      );
+    }
+    else if (field.position === 'binary') {
       return (
         <>
           <tr key={field.id} className="wikibox-preview-row">
@@ -1659,6 +2230,18 @@ const ElectionBuilder = () => {
               </>
             );
           }
+          else if (child.position === 'binary' || child.type === 'electionfooter') {
+            return (
+              <>
+                <tr key={child.id} className="wikibox-preview-row">
+                  <td colSpan="2" className="wikibox-preview-value-ternary-container">
+                    {renderPreviewValue(child)}
+                  </td>
+                </tr>
+                <tr><td colSpan="2" className="middle"></td></tr>
+              </>
+            );
+          }
           // Handle thumbnails and images in groups specially
           else if (child.type === 'thumbnail' || child.type === 'image') {
             return (
@@ -1714,10 +2297,16 @@ const ElectionBuilder = () => {
                       {/* Data columns - one for each electoral column */}
                       {Array.from({ length: columns }).map((_, columnIndex) => (
                         <td key={columnIndex} className="wikibox-preview-value-container">
-                          {columnData[columnIndex] ? 
-                            renderPreviewValue(columnData[columnIndex]) : 
-                            <span className="empty-cell">—</span>
-                          }
+                          {(() => {
+                            const cellData = columnData[columnIndex];
+                            if (!cellData) {
+                              return <span className="empty-cell">—</span>;
+                            }
+                            if (cellData.type === 'color') {
+                              return <div height='6' style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
+                            }
+                            return renderPreviewValue(cellData);
+                          })()}
                         </td>
                       ))}
                     </tr>

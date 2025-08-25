@@ -6,6 +6,7 @@ const BiographyBuilder = () => {
   const [fields, setFields] = useState([]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [title, setTitle] = useState('');
+  const [imageInputModes, setImageInputModes] = useState({});
   const dragCounter = useRef(0);
 
   const fieldTypes = [
@@ -138,6 +139,37 @@ const BiographyBuilder = () => {
       // Restore escaped asterisks
       return part.replace(new RegExp(placeholder, "g"), "*").replace(/--/g, "–");
     });
+  };
+
+  const handleImageUpload = (file, fieldId, updateFunction) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateFunction(fieldId, e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGroupImageUpload = (file, groupId, childId, updateGroupChildFunction) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateGroupChildFunction(groupId, childId, e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const toggleImageInputMode = (fieldId) => {
+    setImageInputModes(prev => ({
+      ...prev,
+      [fieldId]: prev[fieldId] === 'file' ? 'url' : 'file'
+    }));
+  };
+
+  const getImageInputMode = (fieldId) => {
+    return imageInputModes[fieldId] || 'url';
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
@@ -316,13 +348,47 @@ const BiographyBuilder = () => {
       case 'image':
         return (
           <div className="wikibox-image-container">
-            <input
-              className="wikibox-field-input wikibox-image-input"
-              type="url"
-              placeholder="Image URL"
-              value={field.value}
-              onChange={(e) => updateField(field.id, e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+              <button
+                onClick={() => toggleImageInputMode(field.id)}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '2px',
+                  cursor: 'pointer',
+                  minWidth: '45px'
+                }}
+                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
+              >
+                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
+              </button>
+              
+              {getImageInputMode(field.id) === 'url' ? (
+                <input
+                  className="wikibox-field-input wikibox-image-input"
+                  type="url"
+                  placeholder="Image URL"
+                  value={field.value.startsWith('data:') ? '' : field.value}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  style={{ flex: 1 }}
+                />
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImageUpload(file, field.id, updateField);
+                    }
+                  }}
+                  style={{ flex: 1, fontSize: '11px' }}
+                />
+              )}
+            </div>
             {field.value && (
               <>
                 <img 
@@ -516,14 +582,47 @@ const BiographyBuilder = () => {
                         case 'image':
                           return (
                             <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="Image URL"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                style={{ marginBottom: '4px' }}
-                              />
+                              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
+                                <button
+                                  onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
+                                  style={{
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
+                                    background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '2px',
+                                    cursor: 'pointer',
+                                    minWidth: '35px'
+                                  }}
+                                  title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
+                                >
+                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
+                                </button>
+                                
+                                {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
+                                  <input
+                                    className="wikibox-field-input"
+                                    type="url"
+                                    placeholder="Image URL"
+                                    value={child.value.startsWith('data:') ? '' : child.value}
+                                    onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                                    style={{ flex: 1 }}
+                                  />
+                                ) : (
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files[0];
+                                      if (file) {
+                                        handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
+                                      }
+                                    }}
+                                    style={{ flex: 1, fontSize: '10px' }}
+                                  />
+                                )}
+                              </div>
                               {child.value && (
                                 <img 
                                   src={child.value} 
