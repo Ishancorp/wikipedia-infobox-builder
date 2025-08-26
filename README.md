@@ -42,7 +42,6 @@ Create election infoboxes featuring:
 
 - **Text Field**: Standard text input with rich formatting support
 - **Single Text**: Full-width text spanning both columns
-- **Subheader**: Section divider with emphasis styling
 - **Date**: Date picker input
 - **Link**: URL and display text combination
 
@@ -58,6 +57,10 @@ Create election infoboxes featuring:
 - **List**: Bulleted lists with add/remove functionality
 - **Tree List**: Hierarchical list structure
 - **Group**: Container for organizing related fields
+
+### Biography-Specific
+
+- **Subheader**: Section divider with emphasis styling
 
 ### Election-Specific
 

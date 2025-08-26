@@ -2735,10 +2735,14 @@ const ElectionBuilder = () => {
                 <tbody>
                   {headerRows.map((headerChild) => (
                     <tr key={`header-${headerChild.id}`} className="wikibox-preview-row">
-                      <td className="wikibox-preview-label">
+                      <td className="wikibox-preview-label" style={{ paddingBottom: '1em' }}>
                         {parseTextWithSpans(headerChild.label)}
                       </td>
-                      <td colSpan={Math.min(columns, maxColumnsPerRow)} className="wikibox-preview-value-container">
+                      <td 
+                        colSpan={Math.min(columns, maxColumnsPerRow)} 
+                        className="wikibox-preview-value-container" 
+                        style={{ paddingLeft: '1px', paddingRight: '1px' }}
+                      >
                         {headerChild.type === 'color' ? (
                           <div style={{ height: '6px', backgroundColor: headerChild.value, width: '100%' }}></div>
                         ) : (
@@ -2763,7 +2767,7 @@ const ElectionBuilder = () => {
                             const actualColumnIndex = startColumn + colIndex;
                             
                             return (
-                              <td key={colIndex} className="wikibox-preview-value-container">
+                              <td key={colIndex} className="wikibox-preview-value-container" style={{ paddingLeft: '1px', paddingRight: '1px' }}>
                                 {(() => {
                                   const cellData = columnData[actualColumnIndex];
                                   if (!cellData) {
