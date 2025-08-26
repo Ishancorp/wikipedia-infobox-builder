@@ -835,7 +835,6 @@ const ElectionBuilder = () => {
     const columnCount = parseInt(electoralField.value.columns) || 1;
     const baseId = Date.now();
     
-    // Create fields for all columns
     const newFields = [];
     
     for (let colIndex = 0; colIndex < columnCount; colIndex++) {
@@ -873,15 +872,13 @@ const ElectionBuilder = () => {
               const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
               
               if (targetIndex < 0 || targetIndex >= headerChildren.length) {
-                return field.children; // No change if out of bounds
+                return field.children;
               }
               
-              // Create new header array with swapped positions
               const newHeaderChildren = [...headerChildren];
               [newHeaderChildren[currentIndex], newHeaderChildren[targetIndex]] = 
               [newHeaderChildren[targetIndex], newHeaderChildren[currentIndex]];
               
-              // Combine headers and non-headers back together
               return [...newHeaderChildren, ...nonHeaderChildren];
             })()
           }
@@ -1422,7 +1419,6 @@ const ElectionBuilder = () => {
                 }}
               >
                 
-                {/* Header Section - shows fields with columnIndex: -1 */}
                 {field.children.filter(child => child.columnIndex === -1).length > 0 && (
                   <div style={{ 
                     background: '#fff3e0', 
@@ -1452,7 +1448,6 @@ const ElectionBuilder = () => {
                           border: '1px solid #ddd',
                           borderRadius: '4px'
                         }}>
-                          {/* Header controls row */}
                           <div style={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
@@ -1473,7 +1468,6 @@ const ElectionBuilder = () => {
                               placeholder="Header label"
                             />
                             <div style={{ display: 'flex', gap: '2px' }}>
-                              {/* Move up/down within headers */}
                               {headerIndex > 0 && (
                                 <button
                                   className='move-btn'
@@ -1493,7 +1487,6 @@ const ElectionBuilder = () => {
                                 </button>
                               )}
                               
-                              {/* Move to column */}
                               <button
                                 className='move-btn'
                                 onClick={() => moveFieldBetweenColumns(field.id, headerChild.id, -1, 0)}
@@ -1503,7 +1496,6 @@ const ElectionBuilder = () => {
                                 →Col
                               </button>
                               
-                              {/* Remove */}
                               <button
                                 className='remove-btn'
                                 onClick={() => removeFieldFromGroup(field.id, headerChild.id)}
@@ -1514,7 +1506,6 @@ const ElectionBuilder = () => {
                             </div>
                           </div>
                           
-                          {/* Header value editing */}
                           {(() => {
                             switch (headerChild.type) {
                               case 'text':
