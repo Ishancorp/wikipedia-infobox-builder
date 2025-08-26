@@ -14,13 +14,12 @@ import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
-const { parseTextWithSpans, handleGroupImageUpload } = helpers;
+const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
   const [fields, setFields] = useState([]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [title, setTitle] = useState('');
-  const [imageInputModes, setImageInputModes] = useState({});
   const dragCounter = useRef(0);
 
   const fieldTypes = [
@@ -137,17 +136,6 @@ const BiographyBuilder = () => {
       case 'group': return 'Group Title';
       default: return '';
     }
-  };
-
-  const toggleImageInputMode = (fieldId) => {
-    setImageInputModes(prev => ({
-      ...prev,
-      [fieldId]: prev[fieldId] === 'file' ? 'url' : 'file'
-    }));
-  };
-
-  const getImageInputMode = (fieldId) => {
-    return imageInputModes[fieldId] || 'url';
   };
 
   const addFieldToGroup = (groupId, fieldType) => {
@@ -348,11 +336,10 @@ const BiographyBuilder = () => {
         return (
           <FieldsImage
             field={field}
-            imageInputModes={imageInputModes}
-            toggleImageInputMode={toggleImageInputMode}
-            updateField={updateField}
-            toggleCaption={toggleCaption}
-            updateCaption={updateCaption}
+            onUrlChange={(e) => updateField(field.id, e.target.value)}
+            onClickCaption={(e) => toggleCaption(field.id, e.target.checked)}
+            onEditCaption={(e) => updateCaption(field.id, e.target.value)}
+            imageUpload={(file) => handleImageUpload(file, field.id, updateField)}
           />
         );
       
@@ -481,73 +468,13 @@ const BiographyBuilder = () => {
                         
                         case 'image':
                           return (
-                            <div>
-                              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
-                                <button
-                                  onClick={() => toggleImageInputMode(`${field.id}-${child.id}`)}
-                                  style={{
-                                    padding: '2px 6px',
-                                    fontSize: '10px',
-                                    background: getImageInputMode(`${field.id}-${child.id}`) === 'url' ? '#2196F3' : '#4CAF50',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '2px',
-                                    cursor: 'pointer',
-                                    minWidth: '35px'
-                                  }}
-                                  title={`Switch to ${getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'File' : 'URL'} input`}
-                                >
-                                  {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? 'URL' : 'File'}
-                                </button>
-                                
-                                {getImageInputMode(`${field.id}-${child.id}`) === 'url' ? (
-                                  <input
-                                    className="wikibox-field-input"
-                                    type="url"
-                                    placeholder="Image URL"
-                                    value={child.value.startsWith('data:') ? '' : child.value}
-                                    onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                    style={{ flex: 1 }}
-                                  />
-                                ) : (
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      const file = e.target.files[0];
-                                      if (file) {
-                                        handleGroupImageUpload(file, field.id, child.id, updateGroupChild);
-                                      }
-                                    }}
-                                    style={{ flex: 1, fontSize: '10px' }}
-                                  />
-                                )}
-                              </div>
-                              {child.value && (
-                                <img 
-                                  src={child.value} 
-                                  alt="preview" 
-                                  style={{ maxWidth: '100px', height: 'auto' }}
-                                  onError={(e) => e.target.style.display = 'none'}
-                                />
-                              )}              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                              <input
-                                type="checkbox"
-                                checked={child.showCaption}
-                                onChange={(e) => toggleCaptionGroup(field.id, child.id, e.target.checked)}
-                              />
-                              Show Caption
-                            </label>
-                            {child.showCaption && (
-                              <input
-                                className="wikibox-field-input wikibox-caption-input"
-                                type="text"
-                                placeholder="Enter caption"
-                                value={child.caption}
-                                onChange={(e) => updateCaptionGroup(field.id, child.id, e.target.value)}
-                              />
-                            )}
-                            </div>
+                            <FieldsImage
+                              field={child}
+                              onUrlChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                              onClickCaption={(e) => toggleCaptionGroup(field.id, child.id, e.target.checked)}
+                              onEditCaption={(e) => updateCaptionGroup(field.id, child.id, e.target.value)}
+                              imageUpload={(file) => handleGroupImageUpload(file, field.id, child.id, updateGroupChild)}
+                            />
                           );
                         
                         case 'treelist':

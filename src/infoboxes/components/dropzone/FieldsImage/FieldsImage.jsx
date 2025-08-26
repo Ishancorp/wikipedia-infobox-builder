@@ -1,39 +1,35 @@
+import React, { useState } from 'react';
 import "./FieldsImage.css"
-import helpers from "../../../helpers/helpers";
-const { handleImageUpload } = helpers;
 
-export default function FieldsImage({ field, imageInputModes, toggleImageInputMode, updateField, toggleCaption, updateCaption, noCaption }) {
-    const getImageInputMode = (fieldId) => {
-    return imageInputModes[fieldId] || 'url';
-  };
-
+export default function FieldsImage({ field, imageUpload, onUrlChange, onClickCaption, onEditCaption, noCaption }) {
+  const [imageInputMode, setImageInputMode] = useState('url');
   return (
     <div className="wikibox-image-container">
       <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
         <button
-          onClick={() => toggleImageInputMode(field.id)}
+          onClick={() => imageInputMode === 'url' ? setImageInputMode('file') : setImageInputMode('url')}
           style={{
             padding: '4px 8px',
             fontSize: '11px',
-            background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
+            background: imageInputMode === 'url' ? '#2196F3' : '#4CAF50',
             color: 'white',
             border: 'none',
             borderRadius: '2px',
             cursor: 'pointer',
             minWidth: '45px'
           }}
-          title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
+          title={`Switch to ${imageInputMode === 'url' ? 'File' : 'URL'} input`}
         >
-          {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
+          {imageInputMode === 'url' ? 'URL' : 'File'}
         </button>
         
-        {getImageInputMode(field.id) === 'url' ? (
+        {imageInputMode === 'url' ? (
           <input
             className="wikibox-field-input wikibox-image-input"
             type="url"
             placeholder="Image URL"
             value={field.value.startsWith('data:') ? '' : field.value}
-            onChange={(e) => updateField(field.id, e.target.value)}
+            onChange={onUrlChange}
             style={{ flex: 1 }}
           />
         ) : (
@@ -43,7 +39,7 @@ export default function FieldsImage({ field, imageInputModes, toggleImageInputMo
             onChange={(e) => {
               const file = e.target.files[0];
               if (file) {
-                handleImageUpload(file, field.id, updateField);
+                imageUpload(file);
               }
             }}
             style={{ flex: 1, fontSize: '11px' }}
@@ -65,7 +61,7 @@ export default function FieldsImage({ field, imageInputModes, toggleImageInputMo
                 <input
                   type="checkbox"
                   checked={field.showCaption}
-                  onChange={(e) => toggleCaption(field.id, e.target.checked)}
+                  onChange={onClickCaption}
                 />
                 Show Caption
               </label>
@@ -75,7 +71,7 @@ export default function FieldsImage({ field, imageInputModes, toggleImageInputMo
                   type="text"
                   placeholder="Enter caption"
                   value={field.caption}
-                  onChange={(e) => updateCaption(field.id, e.target.value)}
+                  onChange={onEditCaption}
                 />
               )}
             </>
