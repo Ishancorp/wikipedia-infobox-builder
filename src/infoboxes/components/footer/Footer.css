@@ -1,0 +1,25 @@
+footer {
+  text-align: center;
+  color: #6b7280;
+  background-color: #FAFAFA;
+  font-size: 0.875em;
+  border-top: 1px solid #d5d7db;
+}
+
+footer div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5em;
+  padding-bottom: 1em;
+}
+
+footer div a {
+  margin-left: 0.5rem;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+footer div a:hover {
+  color: #1d4ed8;
+}

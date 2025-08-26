@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node src/scripts/updateLastUpdated.js",
     "dev": "vite",
+    "prebuild": "node src/scripts/updateLastUpdated.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

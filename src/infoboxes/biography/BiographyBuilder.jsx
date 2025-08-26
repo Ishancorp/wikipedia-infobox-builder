@@ -796,7 +796,7 @@ const BiographyBuilder = () => {
   };
 
   return (
-    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
+    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', minWidth: '95vw', fontFamily: 'Arial, sans-serif' }}>
       <Sidebar fieldTypes={fieldTypes} handleDragStart={handleDragStart}/>
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>

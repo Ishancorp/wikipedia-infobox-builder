@@ -252,7 +252,6 @@ const ElectionBuilder = () => {
         { type: 'line', position: 'single', label: 'Line', icon: '—' },
         { type: 'electionheader', position: 'ternary', label: 'Election Header', icon: '📝' },
         { type: 'electionfooter', position: 'binary', label: 'Election Footer', icon: '📝' },
-        { type: 'subheader', position: 'subheader', label: 'Subheader', icon: '📝' },
         { type: 'image', position: 'image', label: 'Image', icon: '🖼️' },
         { type: 'thumbnail', position: 'image', label: 'Thumbnail', icon: '🖼️' },
         { type: 'inlineimage', position: 'normal', label: 'Inline Image', icon: '🖼️' },
@@ -343,7 +342,6 @@ const ElectionBuilder = () => {
       case 'line': return '';
       case 'electionheader': return {first: '', middle: '', last: ''};
       case 'electionfooter': return {first: '', middle: '', last: ''};
-      case 'subheader': return '';
       case 'image': return '';
       case 'inlineimage': return '';
       case 'thumbnail': return '';
@@ -560,7 +558,7 @@ const ElectionBuilder = () => {
         id: baseId + index + 1,
         type: child.type,
         label: child.label,
-        position: child.position || (child.type === 'subheader' ? 'subheader' : child.type === 'singletext' ? 'single' : 'normal'),
+        position: child.position || (child.type === 'singletext' ? 'single' : 'normal'),
         value: child.value || getDefaultValue(child.type),
         caption: child.caption || "",
         showCaption: child.showCaption || false,
@@ -792,17 +790,6 @@ const ElectionBuilder = () => {
       
       case 'line':
         return (<></>);
-      
-      case 'subheader':
-        return (
-          <textarea
-            className="wikibox-field-input"
-            type='text'
-            value={field.value}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder="Enter text here"
-          />
-        );
       
       case 'date':
         return (
@@ -1313,21 +1300,6 @@ const ElectionBuilder = () => {
                                   </div>
                                 );
                               
-                              case 'subheader':
-                                return (
-                                  <textarea
-                                    className="wikibox-field-input"
-                                    value={headerChild.value}
-                                    onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
-                                    placeholder="Subheader text"
-                                    style={{ 
-                                      width: '100%', 
-                                      minHeight: '30px',
-                                      fontWeight: 'bold'
-                                    }}
-                                  />
-                                );
-                              
                               case 'inlineimage':
                               case 'image':
                               case 'thumbnail':
@@ -1580,16 +1552,6 @@ const ElectionBuilder = () => {
                                   placeholder="Next election"
                                 />
                               </>
-                            );
-                          
-                          case 'subheader':
-                            return (
-                              <textarea
-                                className="wikibox-field-input"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                placeholder="Subheader text"
-                              />
                             );
                           
                           case 'date':
@@ -2006,16 +1968,6 @@ const ElectionBuilder = () => {
                                 }}
                               />
                             </>
-                          );
-                        
-                        case 'subheader':
-                          return (
-                            <input
-                              className="wikibox-field-input"
-                              type='text'
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                            />
                           );
                         
                         case 'date':
@@ -2469,17 +2421,6 @@ const ElectionBuilder = () => {
         </>
       );
     }
-    else if (field.position === 'subheader') {
-      return (
-        <tr key={field.id} className="wikibox-preview-row">
-          <td colSpan="2" className="wikibox-preview-subheader">
-            <div className="wikibox-preview-subheader">
-              {renderPreviewValue(field)}
-            </div>
-          </td>
-        </tr>
-      );
-    }
     else if (field.position === 'thumbnail' || field.position === 'image') {
       return (
         <tr key={field.id} className="wikibox-preview-row">
@@ -2502,17 +2443,6 @@ const ElectionBuilder = () => {
                 </tr>
                 <tr><td colSpan="2" className="middle"></td></tr>
               </>
-            );
-          }
-          else if (child.position === 'subheader' || child.type === 'subheader') {
-            return (
-              <tr key={child.id} className="wikibox-preview-row">
-                <td colSpan="2" className="wikibox-preview-subheader">
-                  <div className="wikibox-preview-subheader">
-                    {renderPreviewValue(child)}
-                  </div>
-                </td>
-              </tr>
             );
           }
           else if (child.position === 'ternary' || child.type === 'electionheader') {
@@ -2648,7 +2578,7 @@ const ElectionBuilder = () => {
   };
 
   return (
-    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
+    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', minWidth: '95vw', fontFamily: 'Arial, sans-serif' }}>
       <Sidebar fieldTypes={fieldTypes} handleDragStart={handleDragStart}/>
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
