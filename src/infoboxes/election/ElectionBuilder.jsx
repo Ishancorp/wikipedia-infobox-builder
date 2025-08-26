@@ -2030,7 +2030,7 @@ const ElectionBuilder = () => {
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
         <div className="wikibox-editor" style={{ flex: 1 }}>
-          <h2 className="wikibox-editor-title">Wikibox Editor — Elections</h2>
+          <h2 className="wikibox-editor-title">Wikibox Builder — Elections</h2>
           
           <TitleEditor title={title} setTitle={setTitle}/>
 

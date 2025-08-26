@@ -14,6 +14,7 @@ import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
+import FieldsTreeList from '../components/dropzone/FieldsTreeList/FieldsTreeList.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
@@ -346,35 +347,10 @@ const BiographyBuilder = () => {
       case 'treelist':
       case 'list':
         return (
-          <div className="wikibox-list-container">
-            {field.value.map((item, index) => (
-              <div key={index} className="wikibox-list-item" style={{ display: 'flex', marginBottom: '2px' }}>
-                <input
-                  className="wikibox-field-input wikibox-list-input"
-                  type="text"
-                  value={item}
-                  onChange={(e) => {
-                    const newList = [...field.value];
-                    newList[index] = e.target.value;
-                    updateField(field.id, newList);
-                  }}
-                  style={{ flex: 1 }}
-                />
-                <RemoveButton small
-                  onClick={() => {
-                    const newList = field.value.filter((_, i) => i !== index);
-                    updateField(field.id, newList);
-                  }}
-                />
-              </div>
-            ))}
-            <button
-              className="wikibox-list-add-btn"
-              onClick={() => updateField(field.id, [...field.value, 'New item'])}
-            >
-              + Add Item
-            </button>
-          </div>
+          <FieldsTreeList
+            field={field}
+            fieldUpdater={(newList) => updateField(field.id, newList)}
+          />
         );
       
       case 'link':
@@ -435,24 +411,16 @@ const BiographyBuilder = () => {
                     </div>
                     {(() => {
                       switch (child.type) {
+                        case 'subheader':
                         case 'text':
                         case 'singletext':
                           return (
                             <textarea
                               className="wikibox-field-input"
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                              placeholder="Enter text here"
-                            />
-                          );
-                        
-                        case 'subheader':
-                          return (
-                            <input
-                              className="wikibox-field-input"
                               type='text'
                               value={child.value}
                               onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
+                              placeholder="Enter text here"
                             />
                           );
                         
@@ -480,34 +448,10 @@ const BiographyBuilder = () => {
                         case 'treelist':
                         case 'list':
                           return (
-                            <div>
-                              {child.value.map((item, index) => (
-                                <div key={index} style={{ display: 'flex', marginBottom: '2px' }}>
-                                  <input
-                                    type="text"
-                                    value={item}
-                                    onChange={(e) => {
-                                      const newList = [...child.value];
-                                      newList[index] = e.target.value;
-                                      updateGroupChild(field.id, child.id, newList);
-                                    }}
-                                    style={{ flex: 1, padding: '2px', border: '1px solid #ccc', marginRight: '4px' }}
-                                  />
-                                  <RemoveButton small
-                                    onClick={() => {
-                                      const newList = child.value.filter((_, i) => i !== index);
-                                      updateGroupChild(field.id, child.id, newList);
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                              <button
-                                className="wikibox-list-add-btn"
-                                onClick={() => updateGroupChild(field.id, child.id, [...child.value, 'New item'])}
-                              >
-                                + Add Item
-                              </button>
-                            </div>
+                            <FieldsTreeList
+                              field={child}
+                              fieldUpdater={(newList) => updateGroupChild(field.id, child.id, newList)}
+                            />
                           );
                         
                         case 'link':
@@ -646,7 +590,7 @@ const BiographyBuilder = () => {
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>
         <div className="wikibox-editor" style={{ flex: 1 }}>
-          <h2 className="wikibox-editor-title">Wikibox Editor — Biography</h2>
+          <h2 className="wikibox-editor-title">Wikibox Builder — Biography</h2>
           
           <TitleEditor title={title} setTitle={setTitle}/>
 

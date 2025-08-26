@@ -34,3 +34,15 @@
 .remove-btn:hover {
     background: #dd2222
 }
+
+.wikibox-list-add-btn {
+    padding: 4px 8px; 
+    background: #4CAF50; 
+    color: white; 
+    border: none;
+    cursor: pointer;
+}
+
+.wikibox-list-add-btn:hover {
+  background: #2C9F30;
+}
