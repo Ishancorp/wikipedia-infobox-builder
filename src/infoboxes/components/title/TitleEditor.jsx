@@ -9,7 +9,7 @@ const TitleEditor = ({ title, setTitle }) => (
       value={title}
       onChange={(e) => setTitle(e.target.value)}
       placeholder="Wikibox name"
-      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+      style={{ width: '90%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
     />
   </div>
 );

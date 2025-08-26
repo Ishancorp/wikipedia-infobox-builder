@@ -1,3 +1,4 @@
 div.wikibox-preview-container {
-    width: 300px
+    width: 300px;
+    margin-left: 3em;
 }
