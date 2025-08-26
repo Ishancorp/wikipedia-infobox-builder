@@ -1,3 +1,5 @@
+import RemoveButton from "../buttons/RemoveButton";
+
 const FieldsList = ({ fields, parseTextWithSpans, updateFieldLabel, moveField, removeField, renderFieldValue }) => (
   <div className="wikibox-fields-list">
     {fields.map((field, index) => (
@@ -27,12 +29,7 @@ const FieldsList = ({ fields, parseTextWithSpans, updateFieldLabel, moveField, r
                 ↓
               </button>
             )}
-            <button
-              className='remove-btn'
-              onClick={() => removeField(field.id)}
-            >
-              ×
-            </button>
+            <RemoveButton onClick={() => removeField(field.id)} />
           </div>
         </div>
         <div className="wikibox-field-content">

@@ -7,6 +7,9 @@ import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
 import TitleEditor from '../components/title/TitleEditor.jsx';
 import FieldsList from '../components/dropzone/FieldsList.jsx';
+import RemoveButton from '../components/buttons/RemoveButton.jsx';
+import CollapseButton from '../components/buttons/CollapseButton.jsx';
+import MoveButton from '../components/buttons/MoveButton.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
@@ -399,15 +402,12 @@ const BiographyBuilder = () => {
                   }}
                   style={{ flex: 1 }}
                 />
-                <button
-                  className="remove-btn"
+                <RemoveButton small
                   onClick={() => {
                     const newList = field.value.filter((_, i) => i !== index);
                     updateField(field.id, newList);
                   }}
-                >
-                  ×
-                </button>
+                />
               </div>
             ))}
             <button
@@ -444,12 +444,7 @@ const BiographyBuilder = () => {
         return (
           <div className="wikibox-group-container">
             <div className="wikibox-group-header">
-              <button
-                onClick={() => toggleGroupCollapse(field.id)}
-                style={{ padding: '4px 8px', background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer' }}
-              >
-                {field.isCollapsed ? '▼' : '▲'}
-              </button>
+              <CollapseButton onClick={() => toggleGroupCollapse(field.id)} isCollapsed={field.isCollapsed}/>
             </div>
             
             {!field.isCollapsed && (
@@ -484,27 +479,12 @@ const BiographyBuilder = () => {
                       />
                       <div style={{ display: 'flex', gap: '2px' }}>
                         {childIndex > 0 && (
-                          <button
-                            className='move-btn'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
-                          >
-                            ↑
-                          </button>
+                          <MoveButton type='up' onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)} />
                         )}
                         {childIndex < field.children.length - 1 && (
-                          <button
-                            className='move-btn'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
-                          >
-                            ↓
-                          </button>
+                          <MoveButton type='down' onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)} />
                         )}
-                        <button
-                          className='remove-btn'
-                          onClick={() => removeFieldFromGroup(field.id, child.id)}
-                        >
-                          ×
-                        </button>
+                        <RemoveButton small onClick={() => removeFieldFromGroup(field.id, child.id)} />
                       </div>
                     </div>
                     {(() => {
@@ -611,15 +591,12 @@ const BiographyBuilder = () => {
                                     }}
                                     style={{ flex: 1, padding: '2px', border: '1px solid #ccc', marginRight: '4px' }}
                                   />
-                                  <button
-                                    className='remove-btn'
+                                  <RemoveButton small
                                     onClick={() => {
                                       const newList = child.value.filter((_, i) => i !== index);
                                       updateGroupChild(field.id, child.id, newList);
                                     }}
-                                  >
-                                    ×
-                                  </button>
+                                  />
                                 </div>
                               ))}
                               <button
@@ -796,7 +773,7 @@ const BiographyBuilder = () => {
   };
 
   return (
-    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', minWidth: '95vw', fontFamily: 'Arial, sans-serif' }}>
+    <div className="wikibox-builder-container" style={{ display: 'flex', minHeight: '100vh', maxWidth: '95vw', fontFamily: 'Arial, sans-serif' }}>
       <Sidebar fieldTypes={fieldTypes} handleDragStart={handleDragStart}/>
 
       <div className="wikibox-main-content" style={{ flex: 1, padding: '20px', display: 'flex', gap: '20px' }}>

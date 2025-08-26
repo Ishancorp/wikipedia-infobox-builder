@@ -1,6 +1,6 @@
 .outer-div {
   min-height: 100vh;
-  min-width: 95vw;
+  width: 90vw;
   background-color: #f9fafb;
   display: flex;
   flex-direction: column;

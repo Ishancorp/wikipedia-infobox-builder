@@ -8,14 +8,6 @@
     margin-bottom: 4px
 }
 
-.remove-btn {
-    padding: 2px 6px; 
-    background: #ff4444; 
-    color: white; 
-    border: none;
-    cursor: pointer
-}
-
 .move-btn {
     padding: 2px 6px;
     background: #2196F3;

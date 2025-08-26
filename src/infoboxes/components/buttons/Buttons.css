@@ -1,0 +1,31 @@
+.collapse-btn, .move-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.collapse-btn:hover, .move-btn:hover {
+  background: #0176D3;
+}
+
+.collapse-btn {
+  padding: 4px 8px;
+}
+
+.move-btn {
+  padding: 2px 6px;
+  font-size: 12px
+}
+
+.remove-btn {
+    padding: 2px 6px; 
+    background: #ff4444; 
+    color: white; 
+    border: none;
+    cursor: pointer
+}
+
+.remove-btn:hover {
+    background: #dd2222
+}
