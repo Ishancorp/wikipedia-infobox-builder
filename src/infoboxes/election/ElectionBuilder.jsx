@@ -193,6 +193,177 @@ const ElectionBuilder = () => {
           ],
           isCollapsed: false
         },
+        {
+          type: "electoral-template",
+          label: "Electoral Template (Parliamentary)",
+          icon: '📄',
+          position: "electoral",
+          isTemplate: true,
+          value: {
+            title: "Electoral Title",
+            columns: 2,
+            columnData: [{}, {}]
+          },
+          caption: "", 
+          showCaption: false,
+          parentGroup: null,
+          children: [
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Turnout', 
+              value: '61.6%^{*[1]*}{{increase}} 1.5 *pp*' ,
+              columnIndex: -1
+            },
+            {
+              type: "inlineimage",
+              label: " ",
+              position: "normal",
+              value: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Obama_portrait_crop.jpg",
+              caption: "", 
+              showCaption: false,
+              columnIndex: 0
+            },
+            { type: 'color', position: 'normal', label: '', value: '#3333FF', columnIndex: 0},
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Leader', 
+              value: '\'\'\'*Barack Obama*\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Party', 
+              value: '*Democratic*' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Leader\'s seat', 
+              value: '*Illinois*' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Last election', 
+              value: '203 seats, 45.5%' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Seats before', 
+              value: '365' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Seats won', 
+              value: '\'\'\'365\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Popular vote', 
+              value: '\'\'\'69,498,516\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Percentage', 
+              value: '\'\'\'52.9%\'\'\'' ,
+              columnIndex: 0
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Swing', 
+              value: '{{increase}} 7.5 *pp*' ,
+              columnIndex: 0
+            },
+            {
+              type: "inlineimage",
+              label: " ",
+              position: "normal",
+              value: "https://upload.wikimedia.org/wikipedia/commons/d/d6/John_McCain_official_portrait_2009_%28cropped%29.jpg",
+              caption: "", 
+              showCaption: false,
+              columnIndex: 1
+            },
+            { type: 'color', position: 'normal', label: '', value: '#E81B23', columnIndex: 1},
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Leader', 
+              value: '*John McCain*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Party', 
+              value: '*Republican*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Leader\'s seat', 
+              value: '*Arizona*' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Last election', 
+              value: '203 seats, 45.5%' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Seats before', 
+              value: '365' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Seats won', 
+              value: '265' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Popular vote', 
+              value: '59,948,323' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Percentage', 
+              value: '45.7%' ,
+              columnIndex: 1
+            },
+            { 
+              type: 'text', 
+              position: 'normal', 
+              label: 'Swing', 
+              value: '{{increase}} 7.5 *pp*' ,
+              columnIndex: 1
+            },
+          ],
+          isCollapsed: false
+        },
         { 
           type: 'group-template', 
           position: 'group', 
