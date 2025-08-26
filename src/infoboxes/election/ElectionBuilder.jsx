@@ -583,10 +583,56 @@ const ElectionBuilder = () => {
     ));
   };
 
+  const duplicateColumnFields = (field, newColumnCount) => {
+    if (!field.children || field.children.length === 0) {
+      return field.children || [];
+    }
+
+    const currentColumnCount = parseInt(field.value.columns) || 1;
+    
+    if (newColumnCount <= currentColumnCount) {
+      return field.children;
+    }
+
+    const firstColumnChildren = field.children.filter(child => 
+      (child.columnIndex ?? 0) === 0
+    );
+
+    const newChildren = [...field.children];
+    
+    for (let newColIndex = currentColumnCount; newColIndex < newColumnCount; newColIndex++) {
+      firstColumnChildren.forEach((originalChild, childIndex) => {
+        const duplicatedChild = {
+          ...originalChild,
+          id: Date.now() + (newColIndex * 1000) + childIndex,
+          columnIndex: newColIndex,
+          value: getDefaultValue(originalChild.type)
+        };
+        newChildren.push(duplicatedChild);
+      });
+    }
+
+    return newChildren;
+  };
+
   const updateField = (id, newValue) => {
-    setFields(fields.map(field => 
-      field.id === id ? { ...field, value: newValue } : field
-    ));
+    setFields(fields.map(field => {
+      if (field.id === id) {
+        if (field.type === 'electoral' && field.value.columns !== newValue.columns) {
+          const newColumnCount = parseInt(newValue.columns) || 1;
+          const updatedChildren = duplicateColumnFields(field, newColumnCount);
+          
+          return {
+            ...field,
+            value: newValue,
+            children: updatedChildren
+          };
+        }
+        
+        return { ...field, value: newValue };
+      }
+      return field;
+    }));
   };
 
   const updateCaption = (id, newCaption) => {
@@ -653,51 +699,6 @@ const ElectionBuilder = () => {
     ));
   };
 
-  const moveFieldInGroup = (groupId, fromIndex, toIndex) => {
-    const parentField = fields.find(field => field.id === groupId);
-    const isElectoral = parentField && parentField.type === 'electoral';
-    
-    if (isElectoral) {
-      const currentColumn = electoralColumnViews[groupId] || 0;
-      const currentColumnChildren = getElectoralColumnChildren(parentField, currentColumn);
-      
-      if (fromIndex >= currentColumnChildren.length || toIndex >= currentColumnChildren.length) {
-        return;
-      }
-      
-      const allChildren = parentField.children || [];
-      const fromField = currentColumnChildren[fromIndex];
-      const toField = currentColumnChildren[toIndex];
-      
-      const actualFromIndex = allChildren.findIndex(child => child.id === fromField.id);
-      const actualToIndex = allChildren.findIndex(child => child.id === toField.id);
-      
-      const newChildren = [...allChildren];
-      const [movedField] = newChildren.splice(actualFromIndex, 1);
-      newChildren.splice(actualToIndex, 0, movedField);
-      
-      setFields(fields.map(field => 
-        field.id === groupId 
-          ? { ...field, children: newChildren }
-          : field
-      ));
-    } else {
-      setFields(fields.map(field => 
-        field.id === groupId 
-          ? { 
-              ...field, 
-              children: (() => {
-                const newChildren = [...field.children];
-                const [movedField] = newChildren.splice(fromIndex, 1);
-                newChildren.splice(toIndex, 0, movedField);
-                return newChildren;
-              })()
-            }
-          : field
-      ));
-    }
-  };
-
   const updateGroupChildLabel = (groupId, childId, newLabel) => {
     setFields(fields.map(field => 
       field.id === groupId 
@@ -705,6 +706,85 @@ const ElectionBuilder = () => {
             ...field, 
             children: field.children.map(child => 
               child.id === childId 
+                ? { ...child, label: newLabel }
+                : child
+            )
+          }
+        : field
+    ));
+  };
+
+  const moveFieldInGroup = (groupId, fromIndex, toIndex) => {
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { 
+            ...field, 
+            children: (() => {
+              const newChildren = [...field.children];
+              const [movedField] = newChildren.splice(fromIndex, 1);
+              newChildren.splice(toIndex, 0, movedField);
+              return newChildren;
+            })()
+          }
+        : field
+    ));
+  };
+
+  const moveFieldInElectoral = (groupId, fromIndex, toIndex) => {
+    const parentField = fields.find(field => field.id === groupId);
+    if (!parentField) return;
+    
+    const currentColumn = electoralColumnViews[groupId] || 0;
+    const currentColumnChildren = getElectoralColumnChildren(parentField, currentColumn);
+    
+    if (fromIndex >= currentColumnChildren.length || toIndex >= currentColumnChildren.length) {
+      return;
+    }
+    
+    const allChildren = parentField.children || [];
+    const fieldsByLabel = {};
+    
+    allChildren.forEach(child => {
+      if (!fieldsByLabel[child.label]) {
+        fieldsByLabel[child.label] = [];
+      }
+      fieldsByLabel[child.label].push(child);
+    });
+    
+    const labelOrder = currentColumnChildren.map(child => child.label);
+    const [movedLabel] = labelOrder.splice(fromIndex, 1);
+    labelOrder.splice(toIndex, 0, movedLabel);
+    
+    const reorderedChildren = [];
+    
+    allChildren.filter(child => child.columnIndex === -1).forEach(child => {
+      reorderedChildren.push(child);
+    });
+    
+    labelOrder.forEach(label => {
+      if (fieldsByLabel[label]) {
+        fieldsByLabel[label].forEach(field => {
+          if (field.columnIndex !== -1) {
+            reorderedChildren.push(field);
+          }
+        });
+      }
+    });
+    
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { ...field, children: reorderedChildren }
+        : field
+    ));
+  };
+
+  const updateElectoralChildLabel = (groupId, oldLabel, newLabel) => {
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { 
+            ...field, 
+            children: field.children.map(child => 
+              child.label === oldLabel 
                 ? { ...child, label: newLabel }
                 : child
             )
@@ -748,22 +828,34 @@ const ElectionBuilder = () => {
     return columnData.slice(0, columnCount);
   };
 
-  const addFieldToElectoralColumn = (electoralId, fieldType, columnIndex) => {
-    const newField = {
-      id: Date.now(),
-      type: fieldType.type,
-      label: fieldType.label,
-      position: fieldType.position,
-      value: getDefaultValue(fieldType.type),
-      caption: "",
-      showCaption: false,
-      parentGroup: electoralId,
-      columnIndex: columnIndex
-    };
+  const addFieldToElectoralColumn = (electoralId, fieldType) => {
+    const electoralField = fields.find(field => field.id === electoralId);
+    if (!electoralField) return;
+    
+    const columnCount = parseInt(electoralField.value.columns) || 1;
+    const baseId = Date.now();
+    
+    // Create fields for all columns
+    const newFields = [];
+    
+    for (let colIndex = 0; colIndex < columnCount; colIndex++) {
+      const newField = {
+        id: baseId + colIndex,
+        type: fieldType.type,
+        label: fieldType.label,
+        position: fieldType.position,
+        value: getDefaultValue(fieldType.type),
+        caption: "",
+        showCaption: false,
+        parentGroup: electoralId,
+        columnIndex: colIndex
+      };
+      newFields.push(newField);
+    }
     
     setFields(fields.map(field => 
       field.id === electoralId 
-        ? { ...field, children: [...(field.children || []), newField] }
+        ? { ...field, children: [...(field.children || []), ...newFields] }
         : field
     ));
   };
@@ -825,7 +917,7 @@ const ElectionBuilder = () => {
         {childIndex > 0 && (
           <button
             className='move-btn'
-            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
+            onClick={() => moveFieldInElectoral(field.id, childIndex, childIndex - 1)}
             title="Move up in column"
           >
             ↑
@@ -834,7 +926,7 @@ const ElectionBuilder = () => {
         {childIndex < columnChildren.length - 1 && (
           <button
             className='move-btn'
-            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
+            onClick={() => moveFieldInElectoral(field.id, childIndex, childIndex + 1)}
             title="Move down in column"
           >
             ↓
@@ -1317,8 +1409,7 @@ const ElectionBuilder = () => {
                   e.preventDefault();
                   e.stopPropagation();
                   if (draggedItem && draggedItem.type !== 'group' && draggedItem.type !== 'electoral') {
-                    const currentColumn = electoralColumnViews[field.id] || 0;
-                    addFieldToElectoralColumn(field.id, draggedItem, currentColumn);
+                    addFieldToElectoralColumn(field.id, draggedItem);
                     setDraggedItem(null);
                   }
                 }}
@@ -1371,7 +1462,7 @@ const ElectionBuilder = () => {
                             <input
                               type="text"
                               value={headerChild.label}
-                              onChange={(e) => updateGroupChildLabel(field.id, headerChild.id, e.target.value)}
+                              onChange={(e) => updateElectoralChildLabel(field.id, headerChild.label, e.target.value)}
                               style={{ 
                                 fontWeight: 'bold', 
                                 border: 'none', 
@@ -1618,7 +1709,7 @@ const ElectionBuilder = () => {
                         <input
                           type="text"
                           value={child.label}
-                          onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
+                          onChange={(e) => updateElectoralChildLabel(field.id, child.label, e.target.value)}
                           style={{ 
                             fontWeight: 'bold', 
                             border: 'none', 
