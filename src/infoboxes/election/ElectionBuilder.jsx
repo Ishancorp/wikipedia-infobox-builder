@@ -2741,7 +2741,6 @@ const ElectionBuilder = () => {
                       <td 
                         colSpan={Math.min(columns, maxColumnsPerRow)} 
                         className="wikibox-preview-value-container" 
-                        style={{ paddingLeft: '1px', paddingRight: '1px' }}
                       >
                         {headerChild.type === 'color' ? (
                           <div style={{ height: '6px', backgroundColor: headerChild.value, width: '100%' }}></div>
@@ -2766,8 +2765,13 @@ const ElectionBuilder = () => {
                           {Array.from({ length: endColumn - startColumn }).map((_, colIndex) => {
                             const actualColumnIndex = startColumn + colIndex;
                             
+                            const style = {
+                              ...(colIndex !== 0 && { paddingLeft: "1px" }),
+                              ...(colIndex !== endColumn - startColumn - 1 && { paddingRight: "1px" })
+                            };
+                            
                             return (
-                              <td key={colIndex} className="wikibox-preview-value-container" style={{ paddingLeft: '1px', paddingRight: '1px' }}>
+                              <td key={colIndex} className="wikibox-preview-value-container" style={style}>
                                 {(() => {
                                   const cellData = columnData[actualColumnIndex];
                                   if (!cellData) {
