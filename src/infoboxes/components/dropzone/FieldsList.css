@@ -1,0 +1,36 @@
+.wikibox-drop-placeholder {
+    text-align: center;
+    color: #666;
+    padding: 40px
+}
+
+.wikibox-field-label-input {
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    outline: none;
+}
+
+.wikibox-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px
+}
+
+.list-move-btn {
+    margin-right: 4px; 
+    padding: 2px 6px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    cursor: pointer
+}
+
+.wikibox-field-editor {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px
+}

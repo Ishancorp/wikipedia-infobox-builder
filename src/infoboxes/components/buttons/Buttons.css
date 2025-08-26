@@ -1,11 +1,11 @@
-.collapse-btn, .move-btn {
+.collapse-btn, .move-btn, .list-move-btn {
   background: #2196F3;
   color: white;
   border: none;
   cursor: pointer;
 }
 
-.collapse-btn:hover, .move-btn:hover {
+.collapse-btn:hover, .move-btn:hover, .list-move-btn:hover {
   background: #0176D3;
 }
 
@@ -16,6 +16,11 @@
 .move-btn {
   padding: 2px 6px;
   font-size: 12px
+}
+
+.list-move-btn {
+  margin-right: 4px; 
+  padding: 2px 6px;
 }
 
 .remove-btn {

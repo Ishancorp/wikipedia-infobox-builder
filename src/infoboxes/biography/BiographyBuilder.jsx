@@ -10,6 +10,7 @@ import FieldsList from '../components/dropzone/FieldsList.jsx';
 import RemoveButton from '../components/buttons/RemoveButton.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
 import MoveButton from '../components/buttons/MoveButton.jsx';
+import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
@@ -653,22 +654,7 @@ const BiographyBuilder = () => {
   const renderPreviewValue = (field) => {
     switch (field.type) {
       case 'image':
-        return field.value ? (
-          <div style={{ textAlign: 'center' }}>
-            <img 
-              className="wikibox-preview-image"
-              src={field.value} 
-              alt="Preview" 
-              style={{ maxWidth: '100%', height: 'auto' }}
-              onError={(e) => e.target.style.display = 'none'}
-            />
-            {field.showCaption && field.caption && (
-              <div className="wikibox-preview-caption">
-                {parseTextWithSpans(field.caption)}
-              </div>
-            )}
-          </div>
-        ) : 'No image';
+        return <PreviewImage field={field} maxWidth={'100%'}/>
       
       case 'list':
         return (
@@ -796,20 +782,14 @@ const BiographyBuilder = () => {
               background: dragCounter.current > 0 ? '#f0f8ff' : '#fafafa'
             }}
           >
-            {fields.length === 0 ? (
-              <div className="wikibox-drop-placeholder" style={{ textAlign: 'center', color: '#666', padding: '40px' }}>
-                Drag field types here to build your wikibox
-              </div>
-            ) : (
-              <FieldsList
-                fields={fields}
-                parseTextWithSpans={parseTextWithSpans}
-                updateFieldLabel={updateFieldLabel}
-                moveField={moveField}
-                removeField={removeField}
-                renderFieldValue={renderFieldValue}
-              />
-            )}
+            <FieldsList
+              fields={fields}
+              parseTextWithSpans={parseTextWithSpans}
+              updateFieldLabel={updateFieldLabel}
+              moveField={moveField}
+              removeField={removeField}
+              renderFieldValue={renderFieldValue}
+            />
           </div>
         </div>
 
