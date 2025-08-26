@@ -679,26 +679,6 @@ const ElectionBuilder = () => {
     ));
   };
 
-  const duplicateFieldToColumn = (groupId, fieldId, targetColumn) => {
-    const parentField = fields.find(field => field.id === groupId);
-    const sourceField = parentField.children.find(child => child.id === fieldId);
-    
-    if (!sourceField) return;
-    
-    const duplicatedField = {
-      ...sourceField,
-      id: Date.now(),
-      columnIndex: targetColumn,
-      value: getDefaultValue(sourceField.type)
-    };
-    
-    setFields(fields.map(field => 
-      field.id === groupId 
-        ? { ...field, children: [...field.children, duplicatedField] }
-        : field
-    ));
-  };
-
   const updateGroupChildLabel = (groupId, childId, newLabel) => {
     setFields(fields.map(field => 
       field.id === groupId 
@@ -900,6 +880,14 @@ const ElectionBuilder = () => {
     ));
   };
 
+  const removeFieldFromElectoral = (groupId, fieldLabel) => {
+    setFields(fields.map(field => 
+      field.id === groupId 
+        ? { ...field, children: field.children.filter(child => child.label !== fieldLabel) }
+        : field
+    ));
+  };
+
   const renderElectoralChildControls = (field, child, childIndex, currentColumn, columnChildren) => {
     return (
       <div style={{ display: 'flex', gap: '2px' }}>
@@ -930,34 +918,9 @@ const ElectionBuilder = () => {
           </button>
         )}
         
-        {parseInt(field.value.columns) > 1 && (
-          <>
-            <button
-              className='move-btn'
-              onClick={() => duplicateFieldToColumn(field.id, child.id, (currentColumn + 1) % parseInt(field.value.columns))}
-              title="Duplicate to next column"
-            >
-              ⟶
-            </button>
-            
-            {parseInt(field.value.columns) > 2 && (
-              <select
-                onChange={(e) => moveFieldBetweenColumns(field.id, child.id, currentColumn, parseInt(e.target.value))}
-                value={currentColumn}
-                style={{ fontSize: '10px', padding: '1px' }}
-                title="Move to column"
-              >
-                {Array.from({ length: parseInt(field.value.columns) }).map((_, i) => (
-                  <option key={i} value={i}>Col {i + 1}</option>
-                ))}
-              </select>
-            )}
-          </>
-        )}
-        
         <button
           className='remove-btn'
-          onClick={() => removeFieldFromGroup(field.id, child.id)}
+          onClick={() => removeFieldFromElectoral(field.id, child.label)}
         >
           ×
         </button>
