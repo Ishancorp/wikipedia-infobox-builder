@@ -14,6 +14,9 @@ import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
+import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
+import FieldsElectionFooter from '../components/dropzone/FieldsElectionFooter/FieldsElectionFooter.jsx';
+import FieldsElectionHeader from '../components/dropzone/FieldsElectionHeader/FieldsElectionHeader.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
@@ -941,63 +944,17 @@ const ElectionBuilder = () => {
     switch (field.type) {
       case 'electionheader':
         return (
-          <>
-            <input
-                className="wikibox-field-input"
-                type="text"
-                value={field.value.first}
-                onChange={(e) => {
-                  const newList = JSON.parse(JSON.stringify(field.value));
-                  newList.first = e.target.value;
-                  updateField(field.id, newList);
-                }}
-            />
-            <textarea
-                className="wikibox-field-input"
-                value={field.value.middle}
-                onChange={(e) => {
-                  const newList = JSON.parse(JSON.stringify(field.value));
-                  newList.middle = e.target.value;
-                  updateField(field.id, newList);
-                }}
-                placeholder="Enter text here"
-            />
-            <input
-                className="wikibox-field-input"
-                type="text"
-                value={field.value.last}
-                onChange={(e) => {
-                  const newList = JSON.parse(JSON.stringify(field.value));
-                  newList.last = e.target.value;
-                  updateField(field.id, newList);
-                }}
-            />
-          </>
-        );
+          <FieldsElectionHeader
+            field={field}
+            fieldChange={(newList) => updateField(field.id, newList)}
+          />
+        )
       case 'electionfooter':
         return (
-          <>
-            <textarea
-                className="wikibox-field-input"
-                type="text"
-                value={field.value.first}
-                onChange={(e) => {
-                  const newList = JSON.parse(JSON.stringify(field.value));
-                  newList.first = e.target.value;
-                  updateField(field.id, newList);
-                }}
-            />
-            <textarea
-                className="wikibox-field-input"
-                type="text"
-                value={field.value.last}
-                onChange={(e) => {
-                  const newList = JSON.parse(JSON.stringify(field.value));
-                  newList.last = e.target.value;
-                  updateField(field.id, newList);
-                }}
-            />
-          </>
+          <FieldsElectionFooter
+            field={field}
+            fieldChange={(newList) => updateField(field.id, newList)}
+          />
         );
       case 'singletext':
       case 'text':
@@ -1025,10 +982,8 @@ const ElectionBuilder = () => {
       
       case 'date':
         return (
-          <input
-            className="wikibox-field-input"
-            type="date"
-            value={field.value}
+          <FieldsDate
+            field={field}
             onChange={(e) => updateField(field.id, e.target.value)}
           />
         );
@@ -1394,79 +1349,24 @@ const ElectionBuilder = () => {
                           
                           case 'electionfooter':
                             return (
-                              <>
-                                <textarea
-                                  className="wikibox-field-input"
-                                  type="text"
-                                  value={child.value.first || ''}
-                                  onChange={(e) => {
-                                    const newList = JSON.parse(JSON.stringify(child.value));
-                                    newList.first = e.target.value;
-                                    updateGroupChild(field.id, child.id, newList);
-                                  }}
-                                  placeholder="Previous election"
-                                  style={{ marginBottom: '4px' }}
-                                />
-                                <textarea
-                                  className="wikibox-field-input"
-                                  type="text"
-                                  value={child.value.last || ''}
-                                  onChange={(e) => {
-                                    const newList = JSON.parse(JSON.stringify(child.value));
-                                    newList.last = e.target.value;
-                                    updateGroupChild(field.id, child.id, newList);
-                                  }}
-                                  placeholder="Next election"
-                                />
-                              </>
+                              <FieldsElectionFooter
+                                field={child}
+                                fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
+                              />
                             );
                           
                           case 'electionheader':
                             return (
-                              <>
-                                <input
-                                  className="wikibox-field-input"
-                                  type="text"
-                                  value={child.value.first || ''}
-                                  onChange={(e) => {
-                                    const newList = JSON.parse(JSON.stringify(child.value));
-                                    newList.first = e.target.value;
-                                    updateGroupChild(field.id, child.id, newList);
-                                  }}
-                                  placeholder="Previous election"
-                                  style={{ marginBottom: '4px' }}
-                                />
-                                <textarea
-                                  className="wikibox-field-input"
-                                  value={child.value.middle || ''}
-                                  onChange={(e) => {
-                                    const newList = JSON.parse(JSON.stringify(child.value));
-                                    newList.middle = e.target.value;
-                                    updateGroupChild(field.id, child.id, newList);
-                                  }}
-                                  placeholder="Current election details"
-                                  style={{ marginBottom: '4px' }}
-                                />
-                                <input
-                                  className="wikibox-field-input"
-                                  type="text"
-                                  value={child.value.last || ''}
-                                  onChange={(e) => {
-                                    const newList = JSON.parse(JSON.stringify(child.value));
-                                    newList.last = e.target.value;
-                                    updateGroupChild(field.id, child.id, newList);
-                                  }}
-                                  placeholder="Next election"
-                                />
-                              </>
+                              <FieldsElectionHeader
+                                field={child}
+                                fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
+                              />
                             );
                           
                           case 'date':
                             return (
-                              <input
-                                className="wikibox-field-input"
-                                type="date"
-                                value={child.value}
+                              <FieldsDate
+                                field={field}
                                 onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
                               />
                             );
@@ -1613,73 +1513,25 @@ const ElectionBuilder = () => {
                         
                         case 'electionfooter':
                           return (
-                            <>
-                              <textarea
-                                className="wikibox-field-input"
-                                type="text"
-                                value={field.value.first}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(child.value));
-                                newList.first = e.target.value;
-                                updateGroupChild(field.id, child.id, newList);
-                                }}
-                                />
-                              <textarea
-                                className="wikibox-field-input"
-                                type="text"
-                                value={field.value.last}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(field.value));
-                                newList.last = e.target.value;
-                                updateGroupChild(field.id, newList);
-                                }}
-                              />
-                            </>
+                            <FieldsElectionFooter
+                              field={child}
+                              fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
+                            />
                           );
 
                         
                         case 'electionheader':
                           return (
-                            <>
-                              <input
-                                className="wikibox-field-input"
-                                type="text"
-                                value={field.value.first}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(child.value));
-                                newList.first = e.target.value;
-                                updateGroupChild(field.id, child.id, newList);
-                                }}
-                                />
-                              <textarea
-                                className="wikibox-field-input"
-                                value={field.value.middle}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(child.value));
-                                newList.middle = e.target.value;
-                                updateGroupChild(field.id, child.id, newList);
-                                }}
-                                placeholder="Enter text here"
-                              />
-                              <input
-                                className="wikibox-field-input"
-                                type="text"
-                                value={field.value.last}
-                                onChange={(e) => {
-                                const newList = JSON.parse(JSON.stringify(field.value));
-                                newList.last = e.target.value;
-                                updateGroupChild(field.id, newList);
-                                }}
-                              />
-                            </>
+                            <FieldsElectionHeader
+                              field={child}
+                              fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
+                            />
                           );
                         
                         case 'date':
                           return (
-                            <input
-                              className="wikibox-field-input"
-                              type="date"
-                              value={child.value}
+                            <FieldsDate
+                              field={field}
                               onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
                             />
                           );

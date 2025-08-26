@@ -15,6 +15,7 @@ import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsTreeList from '../components/dropzone/FieldsTreeList/FieldsTreeList.jsx';
+import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
@@ -325,10 +326,8 @@ const BiographyBuilder = () => {
       
       case 'date':
         return (
-          <input
-            className="wikibox-field-input"
-            type="date"
-            value={field.value}
+          <FieldsDate
+            field={field}
             onChange={(e) => updateField(field.id, e.target.value)}
           />
         );
@@ -426,10 +425,8 @@ const BiographyBuilder = () => {
                         
                         case 'date':
                           return (
-                            <input
-                              className="wikibox-field-input"
-                              type="date"
-                              value={child.value}
+                            <FieldsDate
+                              field={field}
                               onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
                             />
                           );
