@@ -13,7 +13,8 @@ import MoveButton from '../components/buttons/MoveButton.jsx';
 import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
-const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
+import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
+const { parseTextWithSpans, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
   const [fields, setFields] = useState([]);
@@ -649,6 +650,36 @@ const ElectionBuilder = () => {
     ));
   };
 
+  const updateCaptionGroup = (fieldId, childId, newCaption) => {
+    setFields(fields.map(field => 
+      field.id === fieldId 
+        ? { 
+            ...field, 
+            children: field.children.map(child => 
+              child.id === childId 
+                ? { ...child, caption: newCaption }
+                : child
+            )
+          }
+        : field
+    ));
+  };
+
+  const toggleCaptionGroup = (fieldId, childId, checked) => {
+    setFields(fields.map(field =>
+      field.id === fieldId 
+        ? { 
+            ...field, 
+            children: field.children.map(child => 
+              child.id === childId 
+                ? { ...child, showCaption: checked }
+                : child
+            )
+          }
+        : field
+    ));
+  };
+
   const updateFieldLabel = (id, newLabel) => {
     setFields(fields.map(field => 
       field.id === id ? { ...field, label: newLabel } : field
@@ -1016,189 +1047,28 @@ const ElectionBuilder = () => {
       
       case 'image':
         return (
-          <div className="wikibox-image-container">
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
-              <button
-                onClick={() => toggleImageInputMode(field.id)}
-                style={{
-                  padding: '4px 8px',
-                  fontSize: '11px',
-                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '2px',
-                  cursor: 'pointer',
-                  minWidth: '45px'
-                }}
-                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
-              >
-                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
-              </button>
-              
-              {getImageInputMode(field.id) === 'url' ? (
-                <input
-                  className="wikibox-field-input wikibox-image-input"
-                  type="url"
-                  placeholder="Image URL"
-                  value={field.value.startsWith('data:') ? '' : field.value}
-                  onChange={(e) => updateField(field.id, e.target.value)}
-                  style={{ flex: 1 }}
-                />
-              ) : (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      handleImageUpload(file, field.id, updateField);
-                    }
-                  }}
-                  style={{ flex: 1, fontSize: '11px' }}
-                />
-              )}
-            </div>
-            {field.value && (
-              <>
-                <img 
-                  className="wikibox-image"
-                  src={field.value} 
-                  alt="wikibox" 
-                  style={{ maxWidth: '100px', height: 'auto', marginBottom: '4px' }}
-                  onError={(e) => e.target.style.display = 'none'}
-                />
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <input
-                    type="checkbox"
-                    checked={field.showCaption}
-                    onChange={(e) => toggleCaption(field.id, e.target.checked)}
-                  />
-                  Show Caption
-                </label>
-                {field.showCaption && (
-                  <input
-                    className="wikibox-field-input wikibox-caption-input"
-                    type="text"
-                    placeholder="Enter caption"
-                    value={field.caption}
-                    onChange={(e) => updateCaption(field.id, e.target.value)}
-                  />
-                )}
-              </>
-            )}
-          </div>
+          <FieldsImage
+            field={field}
+            imageInputModes={imageInputModes}
+            toggleImageInputMode={toggleImageInputMode}
+            updateField={updateField}
+            toggleCaption={toggleCaption}
+            updateCaption={updateCaption}
+          />
         );
 
       case 'thumbnail':
-        return (
-          <div className="wikibox-image-container">
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
-              <button
-                onClick={() => toggleImageInputMode(field.id)}
-                style={{
-                  padding: '4px 8px',
-                  fontSize: '11px',
-                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '2px',
-                  cursor: 'pointer',
-                  minWidth: '45px'
-                }}
-                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
-              >
-                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
-              </button>
-              
-              {getImageInputMode(field.id) === 'url' ? (
-                <input
-                  className="wikibox-field-input wikibox-image-input"
-                  type="url"
-                  placeholder="Image URL"
-                  value={field.value.startsWith('data:') ? '' : field.value}
-                  onChange={(e) => updateField(field.id, e.target.value)}
-                  style={{ flex: 1 }}
-                />
-              ) : (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      handleImageUpload(file, field.id, updateField);
-                    }
-                  }}
-                  style={{ flex: 1, fontSize: '11px' }}
-                />
-              )}
-            </div>
-            {field.value && (
-              <img 
-                className="wikibox-image"
-                src={field.value} 
-                alt="wikibox" 
-                style={{ maxWidth: '50px', height: 'auto', marginBottom: '4px' }}
-                onError={(e) => e.target.style.display = 'none'}
-              />
-            )}
-          </div>
-        );
-
       case 'inlineimage':
         return (
-          <div className="wikibox-image-container">
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', alignItems: 'center' }}>
-              <button
-                onClick={() => toggleImageInputMode(field.id)}
-                style={{
-                  padding: '4px 8px',
-                  fontSize: '11px',
-                  background: getImageInputMode(field.id) === 'url' ? '#2196F3' : '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '2px',
-                  cursor: 'pointer',
-                  minWidth: '45px'
-                }}
-                title={`Switch to ${getImageInputMode(field.id) === 'url' ? 'File' : 'URL'} input`}
-              >
-                {getImageInputMode(field.id) === 'url' ? 'URL' : 'File'}
-              </button>
-              
-              {getImageInputMode(field.id) === 'url' ? (
-                <input
-                  className="wikibox-field-input wikibox-image-input"
-                  type="url"
-                  placeholder="Image URL"
-                  value={field.value.startsWith('data:') ? '' : field.value}
-                  onChange={(e) => updateField(field.id, e.target.value)}
-                  style={{ flex: 1 }}
-                />
-              ) : (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      handleImageUpload(file, field.id, updateField);
-                    }
-                  }}
-                  style={{ flex: 1, fontSize: '11px' }}
-                />
-              )}
-            </div>
-            {field.value && (
-              <img 
-                className="wikibox-image"
-                src={field.value} 
-                alt="wikibox" 
-                style={{ maxWidth: '50px', height: 'auto', marginBottom: '4px' }}
-                onError={(e) => e.target.style.display = 'none'}
-              />
-            )}
-          </div>
+          <FieldsImage
+            field={field}
+            imageInputModes={imageInputModes}
+            toggleImageInputMode={toggleImageInputMode}
+            updateField={updateField}
+            toggleCaption={toggleCaption}
+            updateCaption={updateCaption}
+            noCaption
+          />
         );
       
       case 'link':
@@ -2124,11 +1994,11 @@ const ElectionBuilder = () => {
                                   onError={(e) => e.target.style.display = 'none'}
                                 />
                               )}
-                              {field.value && (
+                              {child.value && (
                                 <>
                                   <img 
                                     className="wikibox-image"
-                                    src={field.value} 
+                                    src={child.value} 
                                     alt="wikibox" 
                                     style={{ maxWidth: '100px', height: 'auto', marginBottom: '4px' }}
                                     onError={(e) => e.target.style.display = 'none'}
@@ -2136,18 +2006,18 @@ const ElectionBuilder = () => {
                                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                                     <input
                                       type="checkbox"
-                                      checked={field.showCaption}
-                                      onChange={(e) => toggleCaption(field.id, e.target.checked)}
+                                      checked={child.showCaption}
+                                      onChange={(e) => toggleCaptionGroup(field.id, child.draggedItem, e.target.checked)}
                                     />
                                     Show Caption
                                   </label>
-                                  {field.showCaption && (
+                                  {child.showCaption && (
                                     <input
                                       className="wikibox-field-input wikibox-caption-input"
                                       type="text"
                                       placeholder="Enter caption"
-                                      value={field.caption}
-                                      onChange={(e) => updateCaption(field.id, e.target.value)}
+                                      value={child.caption}
+                                      onChange={(e) => updateCaptionGroup(field.id, child.id, e.target.value)}
                                     />
                                   )}
                                 </>
