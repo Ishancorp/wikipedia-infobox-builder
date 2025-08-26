@@ -1,5 +1,5 @@
-import ListMoveButton from "../buttons/ListMoveButton";
-import RemoveButton from "../buttons/RemoveButton";
+import ListMoveButton from "../../buttons/ListMoveButton";
+import RemoveButton from "../../buttons/RemoveButton";
 import './FieldsList.css'
 
 const FieldsList = ({ fields, parseTextWithSpans, updateFieldLabel, moveField, removeField, renderFieldValue }) => (

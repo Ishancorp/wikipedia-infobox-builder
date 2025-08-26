@@ -6,11 +6,13 @@ import PreviewContainer from '../components/previews/PreviewContainer/PreviewCon
 import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
 import TitleEditor from '../components/title/TitleEditor.jsx';
-import FieldsList from '../components/dropzone/FieldsList.jsx';
+import FieldsList from '../components/dropzone/FieldsList/FieldsList.jsx';
 import RemoveButton from '../components/buttons/RemoveButton.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
 import MoveButton from '../components/buttons/MoveButton.jsx';
 import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
+import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
+import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
@@ -1201,23 +1203,11 @@ const ElectionBuilder = () => {
       
       case 'link':
         return (
-          <div className="wikibox-link-container">
-            <input
-              className="wikibox-field-input wikibox-link-text-input"
-              type="text"
-              placeholder="Link text"
-              value={field.value.text}
-              onChange={(e) => updateField(field.id, { ...field.value, text: e.target.value })}
-              style={{ marginBottom: '2px' }}
-            />
-            <input
-              className="wikibox-field-input wikibox-link-url-input"
-              type="url"
-              placeholder="URL"
-              value={field.value.url}
-              onChange={(e) => updateField(field.id, { ...field.value, url: e.target.value })}
-            />
-          </div>
+          <FieldsLink
+            url={field.value.url} text={field.value.text}
+            onChange1={(e) => updateField(field.id, { ...field.value, text: e.target.value })}
+            onChange2={(e) => updateField(field.id, { ...field.value, url: e.target.value })}
+          />
         );
       
       case 'electoral':
@@ -1839,29 +1829,18 @@ const ElectionBuilder = () => {
                           
                           case 'link':
                             return (
-                              <div>
-                                <input
-                                  className="wikibox-field-input"
-                                  type="text"
-                                  placeholder="Link text"
-                                  value={(child.value || {}).text || ''}
-                                  onChange={(e) => updateGroupChild(field.id, child.id, { 
+                              <FieldsLink
+                                text={(child.value || {}).text || ''}
+                                url={(child.value || {}).url || ''}
+                                onChange1={(e) => updateGroupChild(field.id, child.id, { 
                                     ...(child.value || {}), 
                                     text: e.target.value 
                                   })}
-                                  style={{ marginBottom: '2px' }}
-                                />
-                                <input
-                                  className="wikibox-field-input"
-                                  type="url"
-                                  placeholder="URL"
-                                  value={(child.value || {}).url || ''}
-                                  onChange={(e) => updateGroupChild(field.id, child.id, { 
+                                  onChange2={(e) => updateGroupChild(field.id, child.id, { 
                                     ...(child.value || {}), 
                                     url: e.target.value 
                                   })}
                                 />
-                              </div>
                             );
                           
                           default:
@@ -2233,23 +2212,12 @@ const ElectionBuilder = () => {
                         
                         case 'link':
                           return (
-                            <div>
-                              <input
-                                className="wikibox-field-input"
-                                type="text"
-                                placeholder="Link text"
-                                value={child.value.text}
-                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, text: e.target.value })}
-                                style={{ marginBottom: '2px' }}
-                              />
-                              <input
-                                className="wikibox-field-input"
-                                type="url"
-                                placeholder="URL"
-                                value={child.value.url}
-                                onChange={(e) => updateGroupChild(field.id, child.id, { ...child.value, url: e.target.value })}
-                              />
-                            </div>
+                            <FieldsLink
+                              text={child.value.text}
+                              url={child.value.url}
+                              onChange1={(e) => updateGroupChild(field.id, child.id, { ...child.value, text: e.target.value })}
+                              onChange2={(e) => updateGroupChild(field.id, child.id, { ...child.value, url: e.target.value })}
+                            />
                           );
                         
                         default:
@@ -2307,15 +2275,7 @@ const ElectionBuilder = () => {
       
       case 'link':
         return (
-          <a 
-            className="wikibox-preview-link"
-            href={field.value.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ color: '#0645ad', textDecoration: 'underline' }}
-          >
-            {field.value.text}
-          </a>
+          <PreviewLink field={field}/>
         );
       
       case 'group':
