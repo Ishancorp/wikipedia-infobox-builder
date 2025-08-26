@@ -1753,6 +1753,9 @@ const ElectionBuilder = () => {
       case 'inlineimage':
         return <PreviewImage field={field} maxWidth={'150px'} noCaption inline/>
       
+      case 'color':
+        return <div style={{ height: '6px', backgroundColor: field.value, width: '100%' }}></div>
+      
       case 'list':
         return (
           <ul className="wikibox-preview-list" style={{ margin: 0, paddingLeft: '16px' }}>
@@ -1965,11 +1968,7 @@ const ElectionBuilder = () => {
                         colSpan={Math.min(columns, maxColumnsPerRow)} 
                         className="wikibox-preview-value-container" 
                       >
-                        {headerChild.type === 'color' ? (
-                          <div style={{ height: '6px', backgroundColor: headerChild.value, width: '100%' }}></div>
-                        ) : (
-                          renderPreviewValue(headerChild)
-                        )}
+                        {renderPreviewValue(headerChild)}
                       </td>
                     </tr>
                   ))}
@@ -1999,9 +1998,6 @@ const ElectionBuilder = () => {
                                   const cellData = columnData[actualColumnIndex];
                                   if (!cellData) {
                                     return <span className="empty-cell">—</span>;
-                                  }
-                                  if (cellData.type === 'color') {
-                                    return <div style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
                                   }
                                   return renderPreviewValue(cellData);
                                 })()}
