@@ -2558,9 +2558,12 @@ const ElectionBuilder = () => {
       }
 
       const columns = parseInt(field.value.columns) || 1;
+      var maxColumnsPerRow = 3;
+      if (columns === 4) {
+        maxColumnsPerRow = 2;
+      }
       ensureColumnData(field, columns);
       
-      // Separate header rows (columnIndex: -1) from regular rows
       const headerRows = field.children.filter(child => child.columnIndex === -1);
       const regularChildren = field.children.filter(child => child.columnIndex !== -1);
       
@@ -2576,19 +2579,20 @@ const ElectionBuilder = () => {
         rowGroups[rowKey][columnIndex] = child;
       });
       
+      const columnChunks = Math.ceil(columns / maxColumnsPerRow);
+      
       return (
         <>
           <tr>
             <td colSpan="2" className="wikibox-preview-wrapper-electoral">
               <table className="wikibox-preview-wrapper-electoral-table">
                 <tbody>
-                  {/* Render header rows first */}
                   {headerRows.map((headerChild) => (
                     <tr key={`header-${headerChild.id}`} className="wikibox-preview-row">
                       <td className="wikibox-preview-label">
                         {parseTextWithSpans(headerChild.label)}
                       </td>
-                      <td colSpan={columns + 1} className="wikibox-preview-value-container">
+                      <td colSpan={Math.min(columns, maxColumnsPerRow)} className="wikibox-preview-value-container">
                         {headerChild.type === 'color' ? (
                           <div style={{ height: '6px', backgroundColor: headerChild.value, width: '100%' }}></div>
                         ) : (
@@ -2598,29 +2602,39 @@ const ElectionBuilder = () => {
                     </tr>
                   ))}
                   
-                  {/* Render regular rows */}
-                  {Object.entries(rowGroups).map(([rowLabel, columnData]) => (
-                    <tr key={rowLabel} className="wikibox-preview-row">
-                      <td className="wikibox-preview-label">
-                        {parseTextWithSpans(rowLabel)}
-                      </td>
+                  {Array.from({ length: columnChunks }).map((_, chunkIndex) => (
+                    Object.entries(rowGroups).map(([rowLabel, columnData]) => {
+                      const startColumn = chunkIndex * maxColumnsPerRow;
+                      const endColumn = Math.min(startColumn + maxColumnsPerRow, columns);
                       
-                      {Array.from({ length: columns }).map((_, columnIndex) => (
-                        <td key={columnIndex} className="wikibox-preview-value-container">
-                          {(() => {
-                            const cellData = columnData[columnIndex];
-                            if (!cellData) {
-                              return <span className="empty-cell">—</span>;
-                            }
-                            if (cellData.type === 'color') {
-                              return <div style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
-                            }
-                            return renderPreviewValue(cellData);
-                          })()}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                      return (
+                        <tr key={`${rowLabel}-chunk-${chunkIndex}`} className="wikibox-preview-row">
+                          <td className="wikibox-preview-label">
+                            {parseTextWithSpans(rowLabel)}
+                          </td>
+                          
+                          {Array.from({ length: endColumn - startColumn }).map((_, colIndex) => {
+                            const actualColumnIndex = startColumn + colIndex;
+                            
+                            return (
+                              <td key={colIndex} className="wikibox-preview-value-container">
+                                {(() => {
+                                  const cellData = columnData[actualColumnIndex];
+                                  if (!cellData) {
+                                    return <span className="empty-cell">—</span>;
+                                  }
+                                  if (cellData.type === 'color') {
+                                    return <div style={{ height: '6px', backgroundColor: cellData.value, width: '100%' }}></div>;
+                                  }
+                                  return renderPreviewValue(cellData);
+                                })()}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })
+                  )).flat()}
                 </tbody>
               </table>
             </td>
