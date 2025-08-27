@@ -21,7 +21,7 @@ import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/Field
 import FieldsElectoralControlsByField from '../components/dropzone/FieldsElectoral/FieldsElectoralControlsByField.jsx';
 import FieldsElectoralControls from '../components/dropzone/FieldsElectoral/FieldsElectoralControls.jsx';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
-const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
+const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const ElectionBuilder = () => {
   const [fields, setFields] = useState([]);
@@ -80,7 +80,7 @@ const ElectionBuilder = () => {
         if (draggedItem.type === 'electoral-template') {
           newField = generateElectoralTemplate(draggedItem);
         } else {
-          newField = generateTemplateGroup(draggedItem);
+          newField = generateTemplate(draggedItem);
         }
       } else {
         newField = {
@@ -100,25 +100,6 @@ const ElectionBuilder = () => {
       
       setFields([...fields, newField]);
       setDraggedItem(null);
-    }
-  };
-
-  const getDefaultValue = (type) => {
-    switch (type) {
-      case 'text': return '';
-      case 'color': return '#FFFFFF';
-      case 'singletext': return '';
-      case 'line': return '';
-      case 'electionheader': return {first: '', middle: '', last: ''};
-      case 'electionfooter': return {first: '', middle: '', last: ''};
-      case 'image': return '';
-      case 'inlineimage': return '';
-      case 'thumbnail': return '';
-      case 'date': return new Date().toLocaleDateString();
-      case 'link': return { text: 'Link Text', url: 'https://example.com' };
-      case 'group': return 'Group Title';
-      case 'electoral': return { title: 'Electoral Title', columns: 1, columnData: [{}] };
-      default: return '';
     }
   };
 
@@ -388,33 +369,6 @@ const ElectionBuilder = () => {
     ));
   };
 
-  const generateTemplateGroup = (template) => {
-    const baseId = Date.now();
-    const groupField = {
-      id: baseId,
-      type: 'group',
-      label: template.label.replace(' Template', ''),
-      position: 'group',
-      value: template.label.replace(' Template', ''),
-      caption: "",
-      showCaption: false,
-      parentGroup: null,
-      isCollapsed: false,
-      children: template.children.map((child, index) => ({
-        id: baseId + index + 1,
-        type: child.type,
-        label: child.label,
-        position: child.position || (child.type === 'singletext' ? 'single' : 'normal'),
-        value: child.value || getDefaultValue(child.type),
-        caption: child.caption || "",
-        showCaption: child.showCaption || false,
-        parentGroup: baseId
-      }))
-    };
-    
-    return groupField;
-  };
-
   const ensureColumnData = (field, columnCount) => {
     const columnData = field.value.columnData || [];
     while (columnData.length < columnCount) {
@@ -506,19 +460,13 @@ const ElectionBuilder = () => {
   const renderFieldValue = (field) => {
     switch (field.type) {
       case 'electionheader':
+      case 'electionfooter':
         return (
           <FieldsElectionHeader
             field={field}
             fieldChange={(newList) => updateField(field.id, newList)}
           />
         )
-      case 'electionfooter':
-        return (
-          <FieldsElectionFooter
-            field={field}
-            fieldChange={(newList) => updateField(field.id, newList)}
-          />
-        );
       case 'singletext':
       case 'text':
         return (
@@ -878,16 +826,9 @@ const ElectionBuilder = () => {
                             return (<></>);
                           
                           case 'electionfooter':
-                            return (
-                              <FieldsElectionFooter
-                                field={child}
-                                fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
-                              />
-                            );
-                          
                           case 'electionheader':
                             return (
-                              <FieldsElectionHeader
+                              <FieldsElectionFooter
                                 field={child}
                                 fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
                               />
@@ -1033,18 +974,10 @@ const ElectionBuilder = () => {
                         case 'line':
                           return (<></>);
                         
+                        case 'electionheader':
                         case 'electionfooter':
                           return (
                             <FieldsElectionFooter
-                              field={child}
-                              fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
-                            />
-                          );
-
-                        
-                        case 'electionheader':
-                          return (
-                            <FieldsElectionHeader
                               field={child}
                               fieldChange={(newList) => updateGroupChild(field.id, child.id, newList)}
                             />

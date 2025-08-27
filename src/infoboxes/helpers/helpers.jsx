@@ -158,4 +158,106 @@ const handleGroupImageUpload = (file, groupId, childId, updateGroupChildFunction
   }
 };
 
-export default { parseTextWithSpans, handleImageUpload, handleGroupImageUpload };
+const getDefaultValue = (type) => {
+  switch (type) {
+    case 'text': 
+    case 'singletext':
+    case 'line':
+    case 'subheader':
+    case 'image':
+    case 'inlineimage':
+    case 'thumbnail':
+      return '';
+    
+    case 'color': 
+      return '#FFFFFF';
+    
+    case 'electionheader':
+    case 'electionfooter':
+      return { first: '', middle: '', last: '' };
+    
+    case 'date': 
+      return new Date().toLocaleDateString();
+    
+    case 'link': 
+      return { text: 'Link Text', url: 'https://example.com' };
+    
+    case 'list':
+    case 'treelist':
+      return ['Item 1', 'Item 2'];
+    
+    case 'group': 
+      return 'Group Title';
+    
+    case 'electoral': 
+      return { title: 'Electoral Title', columns: 1, columnData: [{}] };
+    
+    default: 
+      return '';
+  }
+};
+
+const templateHandlers = {
+  group: {
+    getValue: (template) => template.label.replace(' Template', ''),
+    getCaption: () => "",
+    getShowCaption: () => false,
+    mapChild: (child, baseId, index) => ({
+      id: baseId + index + 1,
+      type: child.type,
+      label: child.label,
+      position: child.position || (
+        child.type === 'subheader' ? 'subheader' : 
+        child.type === 'singletext' ? 'single' : 
+        'normal'
+      ),
+      value: child.value || getDefaultValue(child.type),
+      caption: "",
+      showCaption: false,
+      parentGroup: baseId
+    })
+  },
+  electoral: {
+    getValue: (template) => ({
+      title: template.value.title,
+      columns: template.value.columns,
+      columnData: template.value.columnData
+    }),
+    getCaption: (template) => template.value.caption || "",
+    getShowCaption: (template) => template.value.showCaption || false,
+    mapChild: (child, baseId, index) => ({
+      id: baseId + index + 1,
+      type: child.type,
+      label: child.label,
+      position: child.position,
+      value: child.value || getDefaultValue(child.type),
+      caption: child.caption || "",
+      showCaption: child.showCaption || false,
+      parentGroup: baseId,
+      columnIndex: child.columnIndex || 0
+    })
+  }
+};
+
+export const generateTemplate = (template) => {
+  const baseId = Date.now();
+  const templateType = template.type === 'electoral' || template.position === 'electoral' ? 'electoral' : 'group';
+  const handler = templateHandlers[templateType];
+  
+  return {
+    id: baseId,
+    type: templateType,
+    label: template.label.replace(' Template', ''),
+    position: templateType,
+    value: handler.getValue(template),
+    caption: handler.getCaption(template),
+    showCaption: handler.getShowCaption(template),
+    parentGroup: null,
+    isCollapsed: false,
+    children: template.children.map((child, index) => 
+      handler.mapChild(child, baseId, index)
+    )
+  };
+};
+
+export default { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate };

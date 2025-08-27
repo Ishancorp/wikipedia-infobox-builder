@@ -16,7 +16,7 @@ import FieldsTreeList from '../components/dropzone/FieldsTreeList/FieldsTreeList
 import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
-const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
+const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const BiographyBuilder = () => {
   const [fields, setFields] = useState([]);
@@ -39,7 +39,7 @@ const BiographyBuilder = () => {
       let newField;
       
       if (draggedItem.isTemplate) {
-        newField = generateTemplateGroup(draggedItem);
+        newField = generateTemplate(draggedItem);
       } else {
         newField = {
           id: Date.now(),
@@ -57,21 +57,6 @@ const BiographyBuilder = () => {
       
       setFields([...fields, newField]);
       setDraggedItem(null);
-    }
-  };
-
-  const getDefaultValue = (type) => {
-    switch (type) {
-      case 'text': return '';
-      case 'singletext': return '';
-      case 'subheader': return '';
-      case 'image': return '';
-      case 'date': return new Date().toLocaleDateString();
-      case 'list': return ['Item 1', 'Item 2'];
-      case 'treelist': return ['Item 1', 'Item 2'];
-      case 'link': return { text: 'Link Text', url: 'https://example.com' };
-      case 'group': return 'Group Title';
-      default: return '';
     }
   };
 
@@ -215,33 +200,6 @@ const BiographyBuilder = () => {
           }
         : field
     ));
-  };
-
-  const generateTemplateGroup = (template) => {
-    const baseId = Date.now();
-    const groupField = {
-      id: baseId,
-      type: 'group',
-      label: template.label.replace(' Template', ''),
-      position: 'group',
-      value: template.label.replace(' Template', ''),
-      caption: "",
-      showCaption: false,
-      parentGroup: null,
-      isCollapsed: false,
-      children: template.children.map((child, index) => ({
-        id: baseId + index + 1,
-        type: child.type,
-        label: child.label,
-        position: child.position || (child.type === 'subheader' ? 'subheader' : child.type === 'singletext' ? 'single' : 'normal'),
-        value: child.value || getDefaultValue(child.type),
-        caption: "",
-        showCaption: false,
-        parentGroup: baseId
-      }))
-    };
-    
-    return groupField;
   };
 
   const renderFieldValue = (field) => {
