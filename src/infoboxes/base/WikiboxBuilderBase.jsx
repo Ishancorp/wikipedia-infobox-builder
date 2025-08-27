@@ -4,6 +4,7 @@ import helpers from '../helpers/helpers.jsx';
 import PreviewContainer from '../components/previews/PreviewContainer/PreviewContainer.jsx';
 import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
+import allFieldTypes from '../../jsons/allFieldTypes.json';
 import TitleEditor from '../components/title/TitleEditor.jsx';
 import FieldsList from '../components/dropzone/FieldsList/FieldsList.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
@@ -14,11 +15,11 @@ import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 
-const { generateTemplate, getDefaultValue, parseTextWithSpans } = helpers;
+const { generateField, getDefaultValue, parseTextWithSpans } = helpers;
 
 const WikiboxBuilderBase = ({ 
+  toJSON,
   builderType, 
-  fieldTypes, 
   renderFieldValue, 
   renderTableRow,
   customState = {},
@@ -29,6 +30,7 @@ const WikiboxBuilderBase = ({
   const [draggedItem, setDraggedItem] = useState(null);
   const [title, setTitle] = useState('');
   const dragCounter = useRef(0);
+  const [showTitleInBox, setShowTitleInBox] = useState(true);
 
   const [customStateValues, setCustomStateValues] = useState(customState.initialState || {});
 
@@ -42,26 +44,7 @@ const WikiboxBuilderBase = ({
     dragCounter.current = 0;
     
     if (draggedItem) {
-      let newField;
-      
-      if (draggedItem.isTemplate || draggedItem.type === 'electoral-template') {
-        newField = generateTemplate(draggedItem);
-      } else {
-        newField = {
-          id: Date.now(),
-          type: draggedItem.type,
-          label: draggedItem.label,
-          position: draggedItem.position,
-          value: getDefaultValue(draggedItem.type),
-          caption: draggedItem.caption || "",
-          showCaption: draggedItem.showCaption || false,
-          parentGroup: null,
-          children: ['group', 'electoral'].includes(draggedItem.type) ? [] : undefined,
-          columns: draggedItem.type === 'electoral' ? 1 : undefined,
-          isCollapsed: false
-        };
-      }
-      
+      const newField = generateField(draggedItem, toJSON);
       setFields(prev => [...prev, newField]);
       setDraggedItem(null);
     }
@@ -213,6 +196,7 @@ const WikiboxBuilderBase = ({
     // State
     fields,
     setFields,
+    setShowTitleInBox,
     title,
     setTitle,
     draggedItem,
@@ -242,13 +226,13 @@ const WikiboxBuilderBase = ({
 
   const previewContent = previewWrapper ? (
     previewWrapper(
-      <PreviewTable title={title}>
+      <PreviewTable title={showTitleInBox ? title : ""}>
         {fields.map((field) => renderTableRow(field, builderContext))}
       </PreviewTable>,
       builderContext
     )
   ) : (
-    <PreviewTable title={title}>
+    <PreviewTable title={showTitleInBox ? title : ""}>
       {fields.map((field) => renderTableRow(field, builderContext))}
     </PreviewTable>
   );
@@ -260,7 +244,7 @@ const WikiboxBuilderBase = ({
       maxWidth: '95vw', 
       fontFamily: 'Arial, sans-serif' 
     }}>
-      <Sidebar fieldTypes={fieldTypes} handleDragStart={handleDragStart}/>
+      <Sidebar fieldTypes={allFieldTypes[toJSON]} handleDragStart={handleDragStart}/>
 
       <div className="wikibox-main-content" style={{ 
         flex: 1, 
@@ -467,6 +451,7 @@ export class PreviewRenderer {
         );
       
       case 'image':
+      case 'thumbnail':
         return (
           <tr key={field.id} className="wikibox-preview-row">
             <td colSpan="2" className="wikibox-preview-image">

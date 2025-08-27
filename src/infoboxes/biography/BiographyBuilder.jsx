@@ -260,18 +260,6 @@ class BiographyPreviewRenderer extends PreviewRenderer {
         </>
       );
     }
-    else if (field.position === 'single') {
-      return (
-        <>
-          <tr key={field.id} className="wikibox-preview-row">
-            <td colSpan="2" className="wikibox-preview-value-single-container">
-              {this.renderPreviewValue(field)}
-            </td>
-          </tr>
-          <RenderEmptyRow/>
-        </>
-      );
-    }
     else if (field.position === 'subheader') {
       return (
         <tr key={field.id} className="wikibox-preview-row">
@@ -299,6 +287,7 @@ class BiographyPreviewRenderer extends PreviewRenderer {
         ))
       );
     }
+    return super.renderTableRow(field, this.renderPreviewValue);
   }
 }
 
@@ -320,6 +309,7 @@ const BiographyBuilder = () => {
     <WikiboxBuilderBase
       builderType="Biography"
       fieldTypes={fieldTypes}
+      toJSON={'Biography'}
       renderFieldValue={renderFieldValue}
       renderTableRow={renderTableRow}
     />

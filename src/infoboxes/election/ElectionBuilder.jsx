@@ -1,6 +1,5 @@
 import './ElectionBuilderPreview.css';
 import WikiboxBuilderBase, { FieldRenderer, PreviewRenderer } from '../base/WikiboxBuilderBase';
-import allFieldTypes from '../../jsons/allFieldTypes.json';
 import helpers from '../helpers/helpers.jsx';
 import FieldsElectionHeader from '../components/dropzone/FieldsElectionHeader/FieldsElectionHeader.jsx';
 import FieldsElectionFooter from '../components/dropzone/FieldsElectionFooter/FieldsElectionFooter.jsx';
@@ -23,10 +22,13 @@ const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaul
 class ElectionFieldRenderer extends FieldRenderer {
   renderFieldValue(field) {
     const { 
+      setShowTitleInBox,
       updateField, 
       toggleCaption, 
       updateCaption, 
     } = this.context;
+
+    setShowTitleInBox(false);
 
     switch (field.type) {
       case 'electionheader':
@@ -725,11 +727,9 @@ class ElectionPreviewRenderer extends PreviewRenderer {
       case 'color':
         return this.renderColorPreview(field);
 
-      case 'list':
-        return this.renderListPreview(field, 'list');
-
       case 'treelist':
-        return this.renderListPreview(field, 'treelist');
+      case 'list':
+        return this.renderListPreview(field, field.type);
 
       case 'link':
         return this.renderLinkPreview(field);
@@ -762,12 +762,12 @@ class ElectionPreviewRenderer extends PreviewRenderer {
         );
 
       default:
-        return this.renderBasicPreview(field);
+        return super.renderBasicPreview(field);
     }
   }
 
   renderTableRow(field, context) {
-    const renderPreviewValue = (f) => this.renderPreviewValue(f);
+    if(field.type === 'line') console.log(field.position);
 
     if (field.position === 'normal') {
       return (
@@ -783,21 +783,9 @@ class ElectionPreviewRenderer extends PreviewRenderer {
               ></td>
             ) : (
               <td className="wikibox-preview-value-container">
-                {renderPreviewValue(field)}
+                {this.renderPreviewValue(field)}
               </td>
             )}
-          </tr>
-          <RenderEmptyRow/>
-        </>
-      );
-    }
-    else if (field.position === 'single') {
-      return (
-        <>
-          <tr key={field.id} className="wikibox-preview-row">
-            <td colSpan="2" className="wikibox-preview-value-single-container">
-              {renderPreviewValue(field)}
-            </td>
           </tr>
           <RenderEmptyRow/>
         </>
@@ -808,7 +796,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
         <>
           <tr key={field.id} className="wikibox-preview-row">
             <td colSpan="2" className="wikibox-preview-value-ternary-container">
-              {renderPreviewValue(field)}
+              {this.renderPreviewValue(field)}
             </td>
           </tr>
           <RenderEmptyRow/>
@@ -819,7 +807,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
       return (
         <tr key={field.id} className="wikibox-preview-row">
           <td colSpan="2" className="wikibox-preview-image">
-            {renderPreviewValue(field)}
+            {this.renderPreviewValue(field)}
           </td>
         </tr>
       );
@@ -827,48 +815,14 @@ class ElectionPreviewRenderer extends PreviewRenderer {
     else if (field.position === 'group') {
       return (
         field.children && field.children.map((child) => {
-          if (child.position === 'single' || child.type === 'line' || child.type === 'singletext') {
-            return (
-              <>
-                <tr key={child.id} className="wikibox-preview-row">
-                  <td colSpan="2" className="wikibox-preview-value-single-container">
-                    {renderPreviewValue(child)}
-                  </td>
-                </tr>
-                <RenderEmptyRow/>
-              </>
-            );
-          }
-          else if (child.position === 'ternary' || child.type === 'electionheader' || child.position === 'binary' || child.type === 'electionfooter') {
-            return (
-              <>
-                <tr key={child.id} className="wikibox-preview-row">
-                  <td colSpan="2" className="wikibox-preview-value-ternary-container">
-                    {renderPreviewValue(child)}
-                  </td>
-                </tr>
-                <RenderEmptyRow/>
-              </>
-            );
-          }
-          else if (child.type === 'thumbnail' || child.type === 'image') {
-            return (
-              <tr key={child.id} className="wikibox-preview-row">
-                <td colSpan="2" className="wikibox-preview-image">
-                  {renderPreviewValue(child)}
-                </td>
-              </tr>
-            );
-          }
-          return this.renderTableRow(child, renderPreviewValue);
+          return this.renderTableRow(child, context);
         })
       );
     }
     else if (field.position === 'electoral') {
       return this.renderElectoralTableRow(field, context);
     }
-
-    return null;
+    return super.renderTableRow(field, this.renderPreviewValue);
   }
 
   renderElectoralTableRow(field, context) {
@@ -898,7 +852,6 @@ class ElectionPreviewRenderer extends PreviewRenderer {
     });
     
     const columnChunks = Math.ceil(columns / maxColumnsPerRow);
-    const renderPreviewValue = (f) => this.renderPreviewValue(f);
     
     return (
       <>
@@ -913,7 +866,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
                   colSpan={Math.min(columns, maxColumnsPerRow)} 
                   className="wikibox-preview-value-container" 
                 >
-                  {renderPreviewValue(headerChild)}
+                  {this.renderPreviewValue(headerChild)}
                 </td>
               </tr>
               <RenderEmptyRow/>
@@ -948,7 +901,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
                           if (!cellData) {
                             return <span className="empty-cell">—</span>;
                           }
-                          return renderPreviewValue(cellData);
+                          return this.renderPreviewValue(cellData);
                         })()}
                       </td>
                     );
@@ -965,7 +918,6 @@ class ElectionPreviewRenderer extends PreviewRenderer {
 }
 
 const ElectionBuilder = () => {
-  const fieldTypes = allFieldTypes.Election;
   const fieldRenderer = new ElectionFieldRenderer();
   const previewRenderer = new ElectionPreviewRenderer(helpers);
 
@@ -996,7 +948,7 @@ const ElectionBuilder = () => {
   return (
     <WikiboxBuilderBase
       builderType="Elections"
-      fieldTypes={fieldTypes}
+      toJSON={'Election'}
       renderFieldValue={renderFieldValue}
       renderTableRow={renderTableRow}
       customState={customState}

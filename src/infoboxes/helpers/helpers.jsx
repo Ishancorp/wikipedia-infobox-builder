@@ -1,3 +1,5 @@
+import allFieldTypes from '../../jsons/allFieldTypes.json';
+
 const parseTextWithSpans = (text) => {
   const placeholder = "__AST__";
   const safeText = text.replace(/\\\*/g, placeholder);
@@ -197,20 +199,27 @@ const getDefaultValue = (type) => {
   }
 };
 
+const createTypePositionMapping = (elementsData) => {
+  const mapping = {};
+  
+  elementsData.forEach(element => {
+    mapping[element.type] = element.position;
+  });
+  
+  return mapping;
+};
+
 const templateHandlers = {
   group: {
     getValue: (template) => template.label.replace(' Template', ''),
     getCaption: () => "",
     getShowCaption: () => false,
-    mapChild: (child, baseId, index) => ({
+    mapChild: (child, baseId, index, typePositionMap) => ({
       id: baseId + index + 1,
       type: child.type,
       label: child.label,
-      position: child.position || (
-        child.type === 'subheader' ? 'subheader' : 
-        child.type === 'singletext' ? 'single' : 
-        'normal'
-      ),
+      // Use the position from the elements mapping based on type
+      position: typePositionMap[child.type] || child.position || 'normal',
       value: child.value || getDefaultValue(child.type),
       caption: child.caption || "",
       showCaption: child.showCaption || false,
@@ -219,45 +228,105 @@ const templateHandlers = {
   },
   electoral: {
     getValue: (template) => ({
-      title: template.value.title,
-      columns: template.value.columns,
-      columnData: template.value.columnData
+      title: template.value?.title || template.label.replace(' Template', ''),
+      columns: template.value?.columns || 2,
+      columnData: template.value?.columnData || [{}, {}]
     }),
-    getCaption: (template) => template.value.caption || "",
-    getShowCaption: (template) => template.value.showCaption || false,
-    mapChild: (child, baseId, index) => ({
+    getCaption: (template) => template.caption || "",
+    getShowCaption: (template) => template.showCaption || false,
+    mapChild: (child, baseId, index, typePositionMap) => ({
       id: baseId + index + 1,
       type: child.type,
       label: child.label,
-      position: child.position,
+      // Use the position from the elements mapping based on type
+      position: typePositionMap[child.type] || child.position || 'normal',
       value: child.value || getDefaultValue(child.type),
       caption: child.caption || "",
       showCaption: child.showCaption || false,
       parentGroup: baseId,
-      columnIndex: child.columnIndex || 0
+      columnIndex: child.columnIndex !== undefined ? child.columnIndex : 0
     })
   }
 };
 
-export const generateTemplate = (template) => {
+// Universal function that handles both templates and regular elements
+export const generateField = (item, toJSON) => {
   const baseId = Date.now();
-  const templateType = template.type === 'electoral' || template.position === 'electoral' ? 'electoral' : 'group';
-  const handler = templateHandlers[templateType];
+  
+  // If it's a template, process it with the template system
+  if (item.isTemplate || item.type === 'electoral-template' || item.type === 'group-template') {
+    // Determine which elements list to use based on template context
+    let elementsData;
+    if (toJSON !== '') {
+      elementsData = allFieldTypes[toJSON].find(section => section.type === 'Elements')?.list || [];
+    }
+    else if (allFieldTypes.Biography && allFieldTypes.Election) {
+      // If we have both, determine based on template type or content
+      if (item.type === 'electoral-template' || item.position === 'electoral') {
+        elementsData = allFieldTypes.Election.find(section => section.type === 'Elements')?.list || [];
+      } else {
+        elementsData = allFieldTypes.Biography.find(section => section.type === 'Elements')?.list || [];
+      }
+    } else {
+      // Fallback to whichever is available
+      const availableData = allFieldTypes.Biography || allFieldTypes.Election || allFieldTypes;
+      elementsData = availableData.find(section => section.type === 'Elements')?.list || [];
+    }
+    
+    // Create the type-to-position mapping from the appropriate elements data
+    const typePositionMap = createTypePositionMapping(elementsData);
+    
+    // Determine template type based on the JSON data
+    const templateType = item.type === 'electoral-template' || 
+                        item.position === 'electoral' ? 'electoral' : 'group';
+    
+    const handler = templateHandlers[templateType];
+    
+    return {
+      id: baseId,
+      type: templateType,
+      label: item.label.replace(' Template', ''),
+      position: templateType,
+      value: handler.getValue(item),
+      caption: handler.getCaption(item),
+      showCaption: handler.getShowCaption(item),
+      parentGroup: null,
+      isCollapsed: item.isCollapsed || false,
+      children: item.children.map((child, index) => 
+        handler.mapChild(child, baseId, index, typePositionMap)
+      )
+    };
+  }
+  
+  // If it's a regular element, create a simple field with correct position mapping
+  let elementsData;
+  if (allFieldTypes.Biography && allFieldTypes.Election) {
+    // Default to Biography elements for regular items, unless it's electoral type
+    if (item.type === 'electoral') {
+      elementsData = allFieldTypes.Election.find(section => section.type === 'Elements')?.list || [];
+    } else {
+      elementsData = allFieldTypes.Biography.find(section => section.type === 'Elements')?.list || [];
+    }
+  } else {
+    const availableData = allFieldTypes.Biography || allFieldTypes.Election || allFieldTypes;
+    elementsData = availableData.find(section => section.type === 'Elements')?.list || [];
+  }
+  
+  const typePositionMap = createTypePositionMapping(elementsData);
   
   return {
     id: baseId,
-    type: templateType,
-    label: template.label.replace(' Template', ''),
-    position: templateType,
-    value: handler.getValue(template),
-    caption: handler.getCaption(template),
-    showCaption: handler.getShowCaption(template),
+    type: item.type,
+    label: item.label,
+    position: typePositionMap[item.type] || item.position || 'normal',
+    value: getDefaultValue(item.type),
+    caption: item.caption || "",
+    showCaption: item.showCaption || false,
     parentGroup: null,
-    isCollapsed: false,
-    children: template.children.map((child, index) => 
-      handler.mapChild(child, baseId, index)
-    )
+    children: ['group', 'electoral'].includes(item.type) ? [] : undefined,
+    columns: item.type === 'electoral' ? 1 : undefined,
+    isCollapsed: false
   };
 };
 
-export default { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate };
+export default { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateField };
