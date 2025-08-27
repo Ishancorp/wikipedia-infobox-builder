@@ -324,10 +324,49 @@ class ElectionFieldRenderer extends FieldRenderer {
             value={field.value.columns}
             onChange={(e) => {
               const newColumns = parseInt(e.target.value) || 1;
-              updateField(field.id, {
-                ...field.value,
-                columns: newColumns
-              });
+
+              this.context.setFields(fields =>
+                fields.map(f => {
+                  if (f.id !== field.id) return f;
+
+                  const oldColumns = parseInt(f.value.columns) || 1;
+                  let updatedChildren = [...(f.children || [])];
+
+                  if (newColumns > oldColumns) {
+                    const groupedByLabel = {};
+                    updatedChildren.forEach(child => {
+                      if (child.columnIndex === -1) return;
+                      if (!groupedByLabel[child.label]) {
+                        groupedByLabel[child.label] = [];
+                      }
+                      groupedByLabel[child.label].push(child);
+                    });
+
+                    const baseId = Date.now();
+                    Object.entries(groupedByLabel).forEach(([label, children]) => {
+                      const template = children[0];
+                      for (let colIndex = oldColumns; colIndex < newColumns; colIndex++) {
+                        updatedChildren.push({
+                          ...template,
+                          id: baseId + colIndex + Math.random(),
+                          columnIndex: colIndex,
+                          value: getDefaultValue(template.type)
+                        });
+                      }
+                    });
+                  } else if (newColumns < oldColumns) {
+                    updatedChildren = updatedChildren.filter(c =>
+                      c.columnIndex === -1 || c.columnIndex < newColumns
+                    );
+                  }
+
+                  return {
+                    ...f,
+                    value: { ...f.value, columns: newColumns },
+                    children: updatedChildren
+                  };
+                })
+              );
             }}
             style={{ flex: 1 }}
           />
