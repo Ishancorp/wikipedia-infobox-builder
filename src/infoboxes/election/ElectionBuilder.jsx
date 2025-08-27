@@ -21,6 +21,7 @@ import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/Field
 import FieldsElectoralControlsByField from '../components/dropzone/FieldsElectoral/FieldsElectoralControlsByField.jsx';
 import FieldsElectoralControls from '../components/dropzone/FieldsElectoral/FieldsElectoralControls.jsx';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
+import FieldsElectoralHeaderByField from '../components/dropzone/FieldsElectoral/FieldsElectoralHeaderByField.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const ElectionBuilder = () => {
@@ -261,18 +262,61 @@ const ElectionBuilder = () => {
   };
 
   const moveFieldBetweenColumns = (groupId, fieldId, fromColumn, toColumn) => {
-    setFields(fields.map(field => 
-      field.id === groupId 
-        ? { 
-            ...field, 
-            children: field.children.map(child => 
-              child.id === fieldId 
-                ? { ...child, columnIndex: toColumn }
-                : child
-            )
-          }
-        : field
-    ));
+    const electoralField = fields.find(field => field.id === groupId);
+    if (!electoralField) return;
+    
+    const sourceField = electoralField.children.find(child => child.id === fieldId);
+    if (!sourceField) return;
+    
+    const columnCount = parseInt(electoralField.value.columns) || 1;
+    
+    setFields(fields.map(field => {
+      if (field.id !== groupId) return field;
+      
+      let updatedChildren = [...field.children];
+      
+      // Case 1: Moving from header (column -1) to regular column (>=0)
+      if (fromColumn === -1 && toColumn >= 0) {
+        // Remove the original header field
+        updatedChildren = updatedChildren.filter(child => child.id !== fieldId);
+        
+        // Create duplicates for all columns, keeping value for toColumn, empty for others
+        const baseId = Date.now();
+        for (let colIndex = 0; colIndex < columnCount; colIndex++) {
+          const duplicatedField = {
+            ...sourceField,
+            id: baseId + colIndex,
+            columnIndex: colIndex,
+            value: colIndex === toColumn ? sourceField.value : getDefaultValue(sourceField.type)
+          };
+          updatedChildren.push(duplicatedField);
+        }
+      }
+      // Case 2: Moving from regular column (>=0) to header (column -1)
+      else if (fromColumn >= 0 && toColumn === -1) {
+        // Remove all fields with the same label (all column variants)
+        updatedChildren = updatedChildren.filter(child => child.label !== sourceField.label);
+        
+        // Create new header field with the original field's value
+        const headerField = {
+          ...sourceField,
+          id: Date.now(),
+          columnIndex: -1,
+          value: sourceField.value
+        };
+        updatedChildren.push(headerField);
+      }
+      // Case 3: Moving between regular columns (shouldn't happen with current UI, but keeping for completeness)
+      else {
+        updatedChildren = updatedChildren.map(child => 
+          child.id === fieldId 
+            ? { ...child, columnIndex: toColumn }
+            : child
+        );
+      }
+      
+      return { ...field, children: updatedChildren };
+    }));
   };
 
   const updateGroupChildLabel = (groupId, childId, newLabel) => {
@@ -626,50 +670,16 @@ const ElectionBuilder = () => {
                           border: '1px solid #ddd',
                           borderRadius: '4px'
                         }}>
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center', 
-                            marginBottom: '4px' 
-                          }}>
-                            <input
-                              type="text"
-                              value={headerChild.label}
-                              onChange={(e) => updateElectoralChildLabel(field.id, headerChild.label, e.target.value)}
-                              style={{ 
-                                fontWeight: 'bold', 
-                                border: 'none', 
-                                background: 'transparent', 
-                                outline: 'none', 
-                                flex: 1 
-                              }}
-                              placeholder="Header label"
-                            />
-                            <div style={{ display: 'flex', gap: '2px' }}>
-                              {headerIndex > 0 && (
-                                <MoveButton
-                                  type='up'
-                                  onClick={() => moveHeaderField(field.id, headerChild.id, 'up')}
-                                  title="Move header up"
-                                />
-                              )}
-                              {headerIndex < field.children.filter(child => child.columnIndex === -1).length - 1 && (
-                                <MoveButton
-                                  type='down'
-                                  onClick={() => moveHeaderField(field.id, headerChild.id, 'down')}
-                                  title="Move header down"
-                                />
-                              )}
-                              
-                              <MoveButton
-                                type='col'
-                                onClick={() => moveFieldBetweenColumns(field.id, headerChild.id, -1, 0)}
-                                title="Move to column 1"
-                              />
-                              
-                              <RemoveButton small onClick={() => removeFieldFromGroup(field.id, headerChild.id)} title="Remove header" />
-                            </div>
-                          </div>
+                          <FieldsElectoralHeaderByField
+                            headerIndex={headerIndex}
+                            field={field}
+                            child={headerChild}
+                            onChangeName={(e) => updateElectoralChildLabel(field.id, headerChild.label, e.target.value)}
+                            upClick={() => moveHeaderField(field.id, headerChild.id, 'up')}
+                            downClick={() => moveHeaderField(field.id, headerChild.id, 'down')}
+                            columnClick={() => moveFieldBetweenColumns(field.id, headerChild.id, -1, 0)}
+                            removeClick={() => removeFieldFromGroup(field.id, headerChild.id)}
+                          />
                           
                           {(() => {
                             switch (headerChild.type) {
@@ -791,7 +801,7 @@ const ElectionBuilder = () => {
                         />
                         <FieldsElectoralControlsByField
                           childIndex={childIndex}
-                          columnChildren={currentColumn}
+                          columnChildren={getElectoralColumnChildren(field, currentColumn).length}
                           starClick={() => moveFieldBetweenColumns(field.id, child.id, currentColumn, -1)}
                           upClick={() => moveFieldInElectoral(field.id, childIndex, childIndex - 1)}
                           downClick={() => moveFieldInElectoral(field.id, childIndex, childIndex + 1)}
