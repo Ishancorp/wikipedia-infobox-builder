@@ -1,5 +1,5 @@
 import './Footer.css'
-import lastUpdatedData from '../../../lastUpdated.json';
+import lastUpdatedData from '../../../jsons/lastUpdated.json';
 
 export default function Footer() {
   const lastUpdated = new Date(lastUpdatedData.lastUpdated).toLocaleDateString("en-US", {
