@@ -26,3 +26,7 @@
     align-items: center;
     margin-bottom: 8px
 }
+
+.wikibox-group-drop-zone {
+    max-width: 30vw;
+}
