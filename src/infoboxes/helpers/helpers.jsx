@@ -1,82 +1,100 @@
 const parseTextWithSpans = (text) => {
-  // Replace escaped asterisks with a placeholder
   const placeholder = "__AST__";
   const safeText = text.replace(/\\\*/g, placeholder);
 
   const parseSegment = (segment) => {
-    // Handle escaped superscript: \^{...} -> raw ^{...}
+    if (!segment) return null;
+
+    // 1. Escaped superscript: \^{...}
     const escapedSupMatch = segment.match(/\\\^\{([^}]+)\}/);
     if (escapedSupMatch) {
       const before = segment.slice(0, escapedSupMatch.index);
-      const raw = `^{${escapedSupMatch[1]}}`; // keep it literal
+      const raw = `^{${escapedSupMatch[1]}}`;
       const after = segment.slice(escapedSupMatch.index + escapedSupMatch[0].length);
       return (
         <>
-          {before && parseSegment(before)}
+          {parseSegment(before)}
           {raw}
-          {after && parseSegment(after)}
+          {parseSegment(after)}
         </>
       );
     }
 
-    // Handle real superscript: ^{...}
+    // 2. Real superscript: ^{...}
     const supMatch = segment.match(/\^\{([^}]+)\}/);
     if (supMatch) {
       const before = segment.slice(0, supMatch.index);
       const after = segment.slice(supMatch.index + supMatch[0].length);
       return (
         <>
-          {before && parseSegment(before)}
+          {parseSegment(before)}
           <sup>{parseSegment(supMatch[1])}</sup>
-          {after && parseSegment(after)}
+          {parseSegment(after)}
         </>
       );
     }
 
-    // Handle escaped caret: \^ -> ^
+    // 3. Escaped caret: \^
     if (segment.includes("\\^")) {
       return segment.replace(/\\\^/g, "^");
     }
 
-    // Handle {{increase}} and {{decrease}}
-    if (segment.includes("{{increase}}") || segment.includes("{{decrease}}")) {
-      const parts = segment.split(/({{increase}}|{{decrease}})/);
-      return (
-        <>
-          {parts.map((part, i) => {
-            if (part === "{{increase}}") {
-              return (
-                <span key={i} className="increase">
-                  ▲
-                </span>
-              );
-            }
-            if (part === "{{decrease}}") {
-              return (
-                <span key={i} className="decrease">
-                  ▼
-                </span>
-              );
-            }
-            return parseSegment(part); // keep parsing the rest
-          })}
-        </>
-      );
+    // 4. Handle {{...}} markers
+    const curlyRegex = /\{\{\s*(color\s*\|[^|]+\|[^}]+|increase|decrease)\s*\}\}/;
+    const curlyMatch = segment.match(curlyRegex);
+    if (curlyMatch) {
+      const before = segment.slice(0, curlyMatch.index);
+      const marker = curlyMatch[1].trim();
+      const after = segment.slice(curlyMatch.index + curlyMatch[0].length);
+
+      if (/^color/i.test(marker)) {
+        // {{ color | #hex | text }}
+        const [, color, innerText] =
+          marker.match(/^color\s*\|\s*([^|]+)\s*\|\s*(.+)$/i) || [];
+        return (
+          <>
+            {parseSegment(before)}
+            <span style={{ color: color?.trim() }}>
+              {parseSegment(innerText?.trim())}
+            </span>
+            {parseSegment(after)}
+          </>
+        );
+      }
+
+      if (marker === "increase") {
+        return (
+          <>
+            {parseSegment(before)}
+            <span className="increase">▲</span>
+            {parseSegment(after)}
+          </>
+        );
+      }
+
+      if (marker === "decrease") {
+        return (
+          <>
+            {parseSegment(before)}
+            <span className="decrease">▼</span>
+            {parseSegment(after)}
+          </>
+        );
+      }
     }
 
-    // Find the first occurrence of any marker
+    // 5. Bold/italic/linktext markers
     const markers = [
-      { regex: /\*([^*]+)\*/, className: "linktext", length: 1 },
-      { regex: /'''([^']+)'''/, tag: "strong", length: 3 },
-      { regex: /''([^'']+)''/, tag: "em", length: 2 }
+      { regex: /\*([^*]+)\*/, className: "linktext" },
+      { regex: /'''([^']+)'''/, tag: "strong" },
+      { regex: /''([^']+)''/, tag: "em" },
     ];
 
-    // Find the earliest marker
     let earliestMatch = null;
     let earliestIndex = Infinity;
     let matchedMarker = null;
 
-    markers.forEach(marker => {
+    markers.forEach((marker) => {
       const match = segment.match(marker.regex);
       if (match && match.index < earliestIndex) {
         earliestMatch = match;
@@ -85,34 +103,36 @@ const parseTextWithSpans = (text) => {
       }
     });
 
-    if (!earliestMatch) {
-      // No markers found, return plain text with placeholders restored
-      return segment
-        .replace(new RegExp(placeholder, "g"), "*")
-        .replace(/--/g, "—");
+    if (earliestMatch) {
+      const before = segment.slice(0, earliestIndex);
+      const matchedText = earliestMatch[1];
+      const after = segment.slice(earliestIndex + earliestMatch[0].length);
+
+      const parsedInner = parseSegment(matchedText);
+      let wrappedContent;
+
+      if (matchedMarker.className) {
+        wrappedContent = (
+          <span className={matchedMarker.className}>{parsedInner}</span>
+        );
+      } else {
+        const Tag = matchedMarker.tag;
+        wrappedContent = <Tag>{parsedInner}</Tag>;
+      }
+
+      return (
+        <>
+          {parseSegment(before)}
+          {wrappedContent}
+          {parseSegment(after)}
+        </>
+      );
     }
 
-    const beforeMatch = segment.slice(0, earliestIndex);
-    const matchedText = earliestMatch[1];
-    const afterMatch = segment.slice(earliestIndex + earliestMatch[0].length);
-
-    const parsedInner = parseSegment(matchedText);
-
-    let wrappedContent;
-    if (matchedMarker.className) {
-      wrappedContent = <span className={matchedMarker.className}>{parsedInner}</span>;
-    } else {
-      const Tag = matchedMarker.tag;
-      wrappedContent = <Tag>{parsedInner}</Tag>;
-    }
-
-    return (
-      <>
-        {beforeMatch && parseSegment(beforeMatch)}
-        {wrappedContent}
-        {afterMatch && parseSegment(afterMatch)}
-      </>
-    );
+    // 6. Plain text: restore placeholders & replace --
+    return segment
+      .replace(new RegExp(placeholder, "g"), "*")
+      .replace(/--/g, "—");
   };
 
   return parseSegment(safeText);

@@ -18,7 +18,7 @@
             {
               "type": "singletext",
               "label": "Description",
-              "value": "'''In office'''\\nMarch 12, 2022 -- March 14, 2024"
+              "value": "'''In office'''\nMarch 12, 2022 -- March 14, 2024"
             },
             {
               "type": "text",
@@ -52,7 +52,7 @@
             {
               "type": "text",
               "label": "Born",
-              "value": "Squire Payne\\nMay 5, 1954\\n*New Cat City*, *New Cat State*, *United Cats*"
+              "value": "Squire Payne\nMay 5, 1954\n*New Cat City*, *New Cat State*, *United Cats*"
             },
             {
               "type": "text",
@@ -101,7 +101,7 @@
             {
               "type": "text",
               "label": "Branch/service",
-              "value": "*United Cats Volunteers*\\n(*United Cats Army*)"
+              "value": "*United Cats Volunteers*\n(*United Cats Army*)"
             },
             {
               "type": "text",
@@ -220,7 +220,7 @@
             {
               "type": "singletext",
               "label": "Single Text",
-              "value": "538 members of the *Electoral College*\\n270 electoral votes needed to win"
+              "value": "538 members of the *Electoral College*\n270 electoral votes needed to win"
             },
             {
               "type": "singletext",
@@ -604,7 +604,7 @@
               "label": " ",
               "position": "single",
               "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/ElectoralCollege2008.svg/2560px-ElectoralCollege2008.svg.png",
-              "caption": "Presidential election results map. Blue denotes states won by Obama/Biden and red denotes those won by McCain/Palin. Numbers indicate *electoral votes* cast by each state and the District of Columbia.",
+              "caption": "Presidential election results map. {{ color | #3333FF | Blue }} denotes states won by Obama/Biden and {{ color | #E81B23 | red }} denotes those won by McCain/Palin. Numbers indicate *electoral votes* cast by each state and the District of Columbia.",
               "showCaption": true,
               "columnIndex": 1
             },
@@ -626,9 +626,9 @@
               "type": "electionfooter",
               "position": "binary",
               "value": {
-                "first": "*George W. Bush*\\n*Republican*",
+                "first": "*George W. Bush*\n*Republican*",
                 "middle": "",
-                "last": "*Barack Obama*\\n*Democratic*"
+                "last": "*Barack Obama*\n*Democratic*"
               }
             }
           ]

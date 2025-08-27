@@ -148,6 +148,7 @@ Use Wikipedia-style markup in text fields:
 - `^{text}` - Superscript
 - `{{increase}}` - Up arrow (▲)
 - `{{decrease}}` - Down arrow (▼)
+- `{{color | #ff0000 | }}` - Colors text corresponding color (in this case red)
 - `--` - Em dash (—)
 - `\*` - Literal asterisk (escaped)
 

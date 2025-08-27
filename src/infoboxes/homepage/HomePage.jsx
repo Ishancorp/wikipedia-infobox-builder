@@ -1,4 +1,6 @@
 import './HomePage.css'
+import helpers from '../helpers/helpers';
+const { parseTextWithSpans } = helpers;
 
 export default function HomePage() {
   return (
@@ -40,22 +42,28 @@ export default function HomePage() {
             </p>
             <ul>
               <li>
-                <code>'''bold'''</code> → <b>bold</b>
+                <code>'''bold'''</code> → {parseTextWithSpans(`'''bold'''`)}
               </li>
               <li>
-                <code>''italic''</code> → <i>italic</i>
+                <code>''italic''</code> → {parseTextWithSpans(`''italics''`)}
               </li>
               <li>
-                <code>*link*</code> → <span className="linktext">link</span>
+                <code>*link*</code> → {parseTextWithSpans(`*bold*`)}
               </li>
               <li>
-                <code>^{"{sup}"}</code> → <sup>sup</sup>
+                <code>x^{"{sup}"}</code> → {parseTextWithSpans(`x^{sup}`)}
               </li>
               <li>
-                <code>{"{{increase}}"}</code> → <span className="increase">▲</span>
+                <code>{"{{increase}}"}</code> → {parseTextWithSpans(`{{increase}}`)}
               </li>
               <li>
-                <code>{"{{decrease}}"}</code> → <span className="decrease">▼</span>
+                <code>{"{{decrease}}"}</code> → {parseTextWithSpans(`{{decrease}}`)}
+              </li>
+              <li>
+                <code>{"--"}</code> → {parseTextWithSpans(`--`)} (em dash)
+              </li>
+              <li>
+                <code>{"{{ color | #ff0000 | red}}"}</code> → {parseTextWithSpans(`{{ color | #ff0000 | red}}`)}
               </li>
             </ul>
           </div>

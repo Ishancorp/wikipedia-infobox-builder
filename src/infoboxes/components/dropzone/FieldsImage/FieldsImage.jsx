@@ -66,7 +66,7 @@ export default function FieldsImage({ field, imageUpload, onUrlChange, onClickCa
                 Show Caption
               </label>
               {field.showCaption && (
-                <input
+                <textarea
                   className="wikibox-field-input wikibox-caption-input"
                   type="text"
                   placeholder="Enter caption"
