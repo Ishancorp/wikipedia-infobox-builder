@@ -23,6 +23,7 @@ import FieldsElectoralHeaderByField from '../components/dropzone/FieldsElectoral
 import FieldsTextArea from '../components/dropzone/FieldsTextArea/FieldsTextArea.jsx';
 import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 import RenderElectoralTable from '../components/render/RenderElectoralTable.jsx';
+import FieldsColor from '../components/dropzone/FieldsColor/FieldsColor.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const ElectionBuilder = () => {
@@ -486,14 +487,7 @@ const ElectionBuilder = () => {
         return (<FieldsTextArea field={field} onChange={(e) => updateField(field.id, e.target.value)}/>);
       
       case 'color':
-        return (
-          <input
-            className="wikibox-field-input"
-            value={field.value}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder="Enter color here"
-          />
-        );
+        return (<FieldsColor field={field} onChange={(e) => updateField(field.id, e.target.value)}/>);
       
       case 'line':
         return (<></>);
@@ -651,23 +645,7 @@ const ElectionBuilder = () => {
                                 return (<FieldsTextArea field={headerChild} onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}/>);
 
                               case 'color':
-                                return (
-                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input
-                                      type="color"
-                                      value={headerChild.value}
-                                      onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
-                                      style={{ width: '40px', height: '30px' }}
-                                    />
-                                    <input
-                                      className="wikibox-field-input"
-                                      value={headerChild.value}
-                                      onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
-                                      placeholder="Color code"
-                                      style={{ flex: 1 }}
-                                    />
-                                  </div>
-                                );
+                                return (<FieldsColor field={headerChild} onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}/>);
                               
                               case 'line':
                                 return (
@@ -771,14 +749,7 @@ const ElectionBuilder = () => {
                             return (<FieldsTextArea field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
 
                           case 'color':
-                            return (
-                              <input
-                                className="wikibox-field-input"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                placeholder="Enter text here"
-                              />
-                            );
+                            return (<FieldsColor field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
                           
                           case 'line':
                             return (<></>);
@@ -913,14 +884,7 @@ const ElectionBuilder = () => {
                           return (<FieldsTextArea field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
 
                         case 'color':
-                          return (
-                            <input
-                              className="wikibox-field-input"
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                              placeholder="Enter text here"
-                            />
-                          );
+                          return (<FieldsColor field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
       
                         case 'line':
                           return (<></>);
