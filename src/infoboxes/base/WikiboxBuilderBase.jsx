@@ -6,6 +6,13 @@ import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
 import TitleEditor from '../components/title/TitleEditor.jsx';
 import FieldsList from '../components/dropzone/FieldsList/FieldsList.jsx';
+import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
+import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
+import FieldsTextArea from '../components/dropzone/FieldsTextArea/FieldsTextArea.jsx';
+import CollapseButton from '../components/buttons/CollapseButton.jsx';
+import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
+import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
+import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 
 const { generateTemplate, getDefaultValue, parseTextWithSpans } = helpers;
 
