@@ -7,9 +7,7 @@ import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
 import TitleEditor from '../components/title/TitleEditor.jsx';
 import FieldsList from '../components/dropzone/FieldsList/FieldsList.jsx';
-import RemoveButton from '../components/buttons/RemoveButton.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
-import MoveButton from '../components/buttons/MoveButton.jsx';
 import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
@@ -38,38 +36,6 @@ const ElectionBuilder = () => {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const generateElectoralTemplate = (template) => {
-    const baseId = Date.now();
-    const electoralField = {
-      id: baseId,
-      type: 'electoral',
-      label: template.label.replace(' Template', ''),
-      position: 'electoral',
-      value: {
-        title: template.value.title,
-        columns: template.value.columns,
-        columnData: template.value.columnData
-      },
-      caption: template.value.caption || "",
-      showCaption: template.value.showCaption || false,
-      parentGroup: null,
-      isCollapsed: false,
-      children: template.children.map((child, index) => ({
-        id: baseId + index + 1,
-        type: child.type,
-        label: child.label,
-        position: child.position,
-        value: child.value || getDefaultValue(child.type),
-        caption: child.caption || "",
-        showCaption: child.showCaption || false,
-        parentGroup: baseId,
-        columnIndex: child.columnIndex || 0
-      }))
-    };
-    
-    return electoralField;
-  };
-
   const handleDrop = (e) => {
     e.preventDefault();
     dragCounter.current = 0;
@@ -79,9 +45,10 @@ const ElectionBuilder = () => {
       
       if (draggedItem.isTemplate || draggedItem.type === 'electoral-template') {
         if (draggedItem.type === 'electoral-template') {
-          newField = generateElectoralTemplate(draggedItem);
+          newField = generateTemplate(draggedItem);
         } else {
           newField = generateTemplate(draggedItem);
+          console.log(newField);
         }
       } else {
         newField = {
@@ -1130,7 +1097,6 @@ const ElectionBuilder = () => {
 
   const renderTableRow = (field) => {
     if (field.position === 'normal') {
-      console.log(field)
       return (
         <>
           <tr key={field.id} className="wikibox-preview-row">

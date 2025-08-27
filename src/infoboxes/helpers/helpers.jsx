@@ -212,8 +212,8 @@ const templateHandlers = {
         'normal'
       ),
       value: child.value || getDefaultValue(child.type),
-      caption: "",
-      showCaption: false,
+      caption: child.caption || "",
+      showCaption: child.showCaption || false,
       parentGroup: baseId
     })
   },
