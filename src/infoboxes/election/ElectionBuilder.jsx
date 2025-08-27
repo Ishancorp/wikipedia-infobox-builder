@@ -1,5 +1,3 @@
-// ElectionBuilder.jsx - Complete refactored implementation
-import React from 'react';
 import './ElectionBuilderPreview.css';
 import WikiboxBuilderBase, { FieldRenderer, PreviewRenderer } from '../base/WikiboxBuilderBase';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
@@ -8,6 +6,7 @@ import FieldsElectionHeader from '../components/dropzone/FieldsElectionHeader/Fi
 import FieldsElectionFooter from '../components/dropzone/FieldsElectionFooter/FieldsElectionFooter.jsx';
 import FieldsColor from '../components/dropzone/FieldsColor/FieldsColor.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
+import FieldsLine from '../components/dropzone/FieldsLine/FieldsLine.jsx';
 import FieldsTextArea from '../components/dropzone/FieldsTextArea/FieldsTextArea.jsx';
 import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
@@ -61,7 +60,7 @@ class ElectionFieldRenderer extends FieldRenderer {
         );
 
       case 'line':
-        return <></>;
+        return <FieldsLine/>;
 
       case 'date':
         return this.renderDateField(field, (e) => updateField(field.id, e.target.value));
@@ -106,7 +105,6 @@ class ElectionFieldRenderer extends FieldRenderer {
 
   renderElectoralField(field) {
     const { 
-      updateField,
       draggedItem,
       setDraggedItem,
       toggleGroupCollapse,
@@ -558,18 +556,7 @@ class ElectionFieldRenderer extends FieldRenderer {
         );
 
       case 'line':
-        return (
-          <div style={{ 
-            padding: '4px 8px', 
-            background: '#f5f5f5', 
-            borderRadius: '2px',
-            fontSize: '12px',
-            color: '#666',
-            fontStyle: 'italic'
-          }}>
-            Horizontal line separator
-          </div>
-        );
+        return (<FieldsLine/>);
 
       case 'electionfooter':
         return (

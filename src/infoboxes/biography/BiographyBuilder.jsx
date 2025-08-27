@@ -1,5 +1,3 @@
-// BiographyBuilder.jsx - Refactored using base component
-import React from 'react';
 import './BiographyBuilderPreview.css';
 import WikiboxBuilderBase, { FieldRenderer, PreviewRenderer } from '../base/WikiboxBuilderBase';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
