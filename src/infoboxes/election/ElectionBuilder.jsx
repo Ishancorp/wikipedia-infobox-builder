@@ -20,6 +20,9 @@ import FieldsElectoralControlsByField from '../components/dropzone/FieldsElector
 import FieldsElectoralControls from '../components/dropzone/FieldsElectoral/FieldsElectoralControls.jsx';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
 import FieldsElectoralHeaderByField from '../components/dropzone/FieldsElectoral/FieldsElectoralHeaderByField.jsx';
+import FieldsTextArea from '../components/dropzone/FieldsTextArea/FieldsTextArea.jsx';
+import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
+import RenderElectoralTable from '../components/render/RenderElectoralTable.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const ElectionBuilder = () => {
@@ -480,14 +483,7 @@ const ElectionBuilder = () => {
         )
       case 'singletext':
       case 'text':
-        return (
-          <textarea
-            className="wikibox-field-input"
-            value={field.value}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder="Enter text here"
-          />
-        );
+        return (<FieldsTextArea field={field} onChange={(e) => updateField(field.id, e.target.value)}/>);
       
       case 'color':
         return (
@@ -652,15 +648,7 @@ const ElectionBuilder = () => {
                             switch (headerChild.type) {
                               case 'text':
                               case 'singletext':
-                                return (
-                                  <textarea
-                                    className="wikibox-field-input"
-                                    value={headerChild.value}
-                                    onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}
-                                    placeholder="Enter header text"
-                                    style={{ width: '100%', minHeight: '40px' }}
-                                  />
-                                );
+                                return (<FieldsTextArea field={headerChild} onChange={(e) => updateGroupChild(field.id, headerChild.id, e.target.value)}/>);
 
                               case 'color':
                                 return (
@@ -780,14 +768,7 @@ const ElectionBuilder = () => {
                         switch (child.type) {
                           case 'text':
                           case 'singletext':
-                            return (
-                              <textarea
-                                className="wikibox-field-input"
-                                value={child.value}
-                                onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                                placeholder="Enter text here"
-                              />
-                            );
+                            return (<FieldsTextArea field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
 
                           case 'color':
                             return (
@@ -929,14 +910,7 @@ const ElectionBuilder = () => {
                       switch (child.type) {
                         case 'text':
                         case 'singletext':
-                          return (
-                            <textarea
-                              className="wikibox-field-input"
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                              placeholder="Enter text here"
-                            />
-                          );
+                          return (<FieldsTextArea field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
 
                         case 'color':
                           return (
@@ -1116,9 +1090,7 @@ const ElectionBuilder = () => {
               )
             }
           </tr>
-          <tr>
-            <td colSpan="2" className="middle"></td>
-          </tr>
+          <RenderEmptyRow/>
         </>
       );
     }
@@ -1130,7 +1102,7 @@ const ElectionBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colSpan="2" className="middle"></td></tr>
+          <RenderEmptyRow/>
         </>
       );
     }
@@ -1142,7 +1114,7 @@ const ElectionBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colSpan="2" className="middle"></td></tr>
+          <RenderEmptyRow/>
         </>
       );
     }
@@ -1166,11 +1138,11 @@ const ElectionBuilder = () => {
                     {renderPreviewValue(child)}
                   </td>
                 </tr>
-                <tr><td colSpan="2" className="middle"></td></tr>
+                <RenderEmptyRow/>
               </>
             );
           }
-          else if (child.position === 'ternary' || child.type === 'electionheader') {
+          else if (child.position === 'ternary' || child.type === 'electionheader' || child.position === 'binary' || child.type === 'electionfooter') {
             return (
               <>
                 <tr key={child.id} className="wikibox-preview-row">
@@ -1178,19 +1150,7 @@ const ElectionBuilder = () => {
                     {renderPreviewValue(child)}
                   </td>
                 </tr>
-                <tr><td colSpan="2" className="middle"></td></tr>
-              </>
-            );
-          }
-          else if (child.position === 'binary' || child.type === 'electionfooter') {
-            return (
-              <>
-                <tr key={child.id} className="wikibox-preview-row">
-                  <td colSpan="2" className="wikibox-preview-value-ternary-container">
-                    {renderPreviewValue(child)}
-                  </td>
-                </tr>
-                <tr><td colSpan="2" className="middle"></td></tr>
+                <RenderEmptyRow/>
               </>
             );
           }
@@ -1238,66 +1198,63 @@ const ElectionBuilder = () => {
       
       return (
         <>
-          <tr>
-            <td colSpan="2" className="wikibox-preview-wrapper-electoral">
-              <table className="wikibox-preview-wrapper-electoral-table">
-                <tbody>
-                  {headerRows.map((headerChild) => (
-                    <tr key={`header-${headerChild.id}`} className="wikibox-preview-row">
-                      <td className="wikibox-preview-label" style={{ paddingBottom: '1em' }}>
-                        {parseTextWithSpans(headerChild.label)}
-                      </td>
-                      <td 
-                        colSpan={Math.min(columns, maxColumnsPerRow)} 
-                        className="wikibox-preview-value-container" 
-                      >
-                        {renderPreviewValue(headerChild)}
-                      </td>
-                    </tr>
-                  ))}
-                  
-                  {Array.from({ length: columnChunks }).map((_, chunkIndex) => (
-                    Object.entries(rowGroups).map(([rowLabel, columnData]) => {
-                      const startColumn = chunkIndex * maxColumnsPerRow;
-                      const endColumn = Math.min(startColumn + maxColumnsPerRow, columns);
+          <RenderElectoralTable>
+            {headerRows.map((headerChild) => (
+              <>
+                <tr key={`header-${headerChild.id}`} className="wikibox-preview-row">
+                  <td className="wikibox-preview-label">
+                    {parseTextWithSpans(headerChild.label)}
+                  </td>
+                  <td 
+                    colSpan={Math.min(columns, maxColumnsPerRow)} 
+                    className="wikibox-preview-value-container" 
+                  >
+                    {renderPreviewValue(headerChild)}
+                  </td>
+                </tr>
+                <RenderEmptyRow/>
+                <RenderEmptyRow/>
+                <RenderEmptyRow/>
+              </>
+            ))}
+            
+            {Array.from({ length: columnChunks }).map((_, chunkIndex) => (
+              Object.entries(rowGroups).map(([rowLabel, columnData]) => {
+                const startColumn = chunkIndex * maxColumnsPerRow;
+                const endColumn = Math.min(startColumn + maxColumnsPerRow, columns);
+                
+                return (
+                  <tr key={`${rowLabel}-chunk-${chunkIndex}`} className="wikibox-preview-row">
+                    <td className="wikibox-preview-label">
+                      {parseTextWithSpans(rowLabel)}
+                    </td>
+                    
+                    {Array.from({ length: endColumn - startColumn }).map((_, colIndex) => {
+                      const actualColumnIndex = startColumn + colIndex;
+                      
+                      const style = {
+                        ...(colIndex !== 0 && { paddingLeft: "1px" }),
+                        ...(colIndex !== endColumn - startColumn - 1 && { paddingRight: "1px" })
+                      };
                       
                       return (
-                        <tr key={`${rowLabel}-chunk-${chunkIndex}`} className="wikibox-preview-row">
-                          <td className="wikibox-preview-label">
-                            {parseTextWithSpans(rowLabel)}
-                          </td>
-                          
-                          {Array.from({ length: endColumn - startColumn }).map((_, colIndex) => {
-                            const actualColumnIndex = startColumn + colIndex;
-                            
-                            const style = {
-                              ...(colIndex !== 0 && { paddingLeft: "1px" }),
-                              ...(colIndex !== endColumn - startColumn - 1 && { paddingRight: "1px" })
-                            };
-                            
-                            return (
-                              <td key={colIndex} className="wikibox-preview-value-container" style={style}>
-                                {(() => {
-                                  const cellData = columnData[actualColumnIndex];
-                                  if (!cellData) {
-                                    return <span className="empty-cell">—</span>;
-                                  }
-                                  return renderPreviewValue(cellData);
-                                })()}
-                              </td>
-                            );
-                          })}
-                        </tr>
+                        <td key={colIndex} className="wikibox-preview-value-container" style={style}>
+                          {(() => {
+                            const cellData = columnData[actualColumnIndex];
+                            if (!cellData) {
+                              return <span className="empty-cell">—</span>;
+                            }
+                            return renderPreviewValue(cellData);
+                          })()}
+                        </td>
                       );
-                    })
-                  )).flat()}
-                </tbody>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td colSpan="2" className="middle"></td>
-          </tr>
+                    })}
+                  </tr>
+                );
+              })
+            )).flat()}
+          </RenderElectoralTable>
+          <RenderEmptyRow/>
         </>
       );
     }

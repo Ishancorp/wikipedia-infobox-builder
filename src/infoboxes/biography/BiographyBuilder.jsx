@@ -16,6 +16,8 @@ import FieldsTreeList from '../components/dropzone/FieldsTreeList/FieldsTreeList
 import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
 import allFieldTypes from '../../jsons/allFieldTypes.json';
+import FieldsTextArea from '../components/dropzone/FieldsTextArea/FieldsTextArea.jsx';
+import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue, generateTemplate } = helpers;
 
 const BiographyBuilder = () => {
@@ -207,15 +209,7 @@ const BiographyBuilder = () => {
       case 'singletext':
       case 'text':
       case 'subheader':
-        return (
-          <textarea
-            className="wikibox-field-input"
-            type='text'
-            value={field.value}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder="Enter text here"
-          />
-        );
+        return (<FieldsTextArea field={field} onChange={(e) => updateField(field.id, e.target.value)}/>);
       
       case 'date':
         return (
@@ -304,15 +298,7 @@ const BiographyBuilder = () => {
                         case 'subheader':
                         case 'text':
                         case 'singletext':
-                          return (
-                            <textarea
-                              className="wikibox-field-input"
-                              type='text'
-                              value={child.value}
-                              onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}
-                              placeholder="Enter text here"
-                            />
-                          );
+                          return ( <FieldsTextArea field={child} onChange={(e) => updateGroupChild(field.id, child.id, e.target.value)}/>);
                         
                         case 'date':
                           return (
@@ -427,7 +413,7 @@ const BiographyBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colspan="2" className="middle"></td></tr>
+          <RenderEmptyRow/>
         </>
       );
     }
@@ -439,7 +425,7 @@ const BiographyBuilder = () => {
               {renderPreviewValue(field)}
             </td>
           </tr>
-          <tr><td colspan="2" className="middle"></td></tr>
+          <RenderEmptyRow/>
         </>
       );
     }
