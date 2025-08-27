@@ -1,8 +1,10 @@
 import ListMoveButton from "../../buttons/ListMoveButton";
 import RemoveButton from "../../buttons/RemoveButton";
 import './FieldsList.css'
+import helpers from "../../../helpers/helpers";
+const { parseTextWithSpans } = helpers;
 
-const FieldsList = ({ fields, parseTextWithSpans, updateFieldLabel, moveField, removeField, renderFieldValue }) => (
+const FieldsList = ({ fields, updateFieldLabel, moveField, removeField, renderFieldValue }) => (
   fields.length === 0 ? (
     <div className="wikibox-drop-placeholder">
       Drag field types here to build your wikibox

@@ -17,6 +17,9 @@ import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
 import FieldsElectionFooter from '../components/dropzone/FieldsElectionFooter/FieldsElectionFooter.jsx';
 import FieldsElectionHeader from '../components/dropzone/FieldsElectionHeader/FieldsElectionHeader.jsx';
+import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
+import FieldsElectoralControlsByField from '../components/dropzone/FieldsElectoral/FieldsElectoralControlsByField.jsx';
+import FieldsElectoralControls from '../components/dropzone/FieldsElectoral/FieldsElectoralControls.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const ElectionBuilder = () => {
@@ -912,34 +915,6 @@ const ElectionBuilder = () => {
     ));
   };
 
-  const renderElectoralChildControls = (field, child, childIndex, currentColumn, columnChildren) => {
-    return (
-      <div style={{ display: 'flex', gap: '2px' }}>
-        <MoveButton
-          type='star'
-          onClick={() => moveFieldBetweenColumns(field.id, child.id, currentColumn, -1)}
-          title="Make header row"
-        />
-        {childIndex > 0 && (
-          <MoveButton
-            type='up'
-            onClick={() => moveFieldInElectoral(field.id, childIndex, childIndex - 1)}
-            title="Move up in column"
-          />
-        )}
-        {childIndex < columnChildren.length - 1 && (
-          <MoveButton
-            type='down'
-            onClick={() => moveFieldInElectoral(field.id, childIndex, childIndex + 1)}
-            title="Move down in column"
-          />
-        )}
-        
-        <RemoveButton small onClick={() => removeFieldFromElectoral(field.id, child.label)} />
-      </div>
-    );
-  };
-
   const renderFieldValue = (field) => {
     switch (field.type) {
       case 'electionheader':
@@ -1045,58 +1020,18 @@ const ElectionBuilder = () => {
                 style={{ flex: 1 }}
               />
               
-              {columnCount > 1 && (
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '4px', 
-                  marginLeft: '8px',
-                  alignItems: 'center'
-                }}>
-                  <button
-                    onClick={() => setElectoralColumnViews({
-                      ...electoralColumnViews,
-                      [field.id]: Math.max(0, currentColumn - 1)
-                    })}
-                    disabled={currentColumn === 0}
-                    style={{ 
-                      padding: '2px 6px', 
-                      fontSize: '12px',
-                      background: currentColumn === 0 ? '#ccc' : '#fff',
-                      border: '1px solid #999',
-                      cursor: currentColumn === 0 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    ←
-                  </button>
-                  <span style={{ 
-                    padding: '2px 6px', 
-                    fontSize: '12px',
-                    minWidth: '60px',
-                    textAlign: 'center',
-                    background: '#f5f5f5',
-                    border: '1px solid #ddd',
-                    borderRadius: '2px'
-                  }}>
-                    Col {currentColumn + 1}/{columnCount}
-                  </span>
-                  <button
-                    onClick={() => setElectoralColumnViews({
-                      ...electoralColumnViews,
-                      [field.id]: Math.min(columnCount - 1, currentColumn + 1)
-                    })}
-                    disabled={currentColumn === columnCount - 1}
-                    style={{ 
-                      padding: '2px 6px', 
-                      fontSize: '12px',
-                      background: currentColumn === columnCount - 1 ? '#ccc' : '#fff',
-                      border: '1px solid #999',
-                      cursor: currentColumn === columnCount - 1 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    →
-                  </button>
-                </div>
-              )}
+              <FieldsElectoralControls
+                columnCount={columnCount}
+                currentColumn={currentColumn}
+                leftClick={() => setElectoralColumnViews({
+                  ...electoralColumnViews,
+                  [field.id]: Math.max(0, currentColumn - 1)
+                })}
+                rightClick={() => setElectoralColumnViews({
+                  ...electoralColumnViews,
+                  [field.id]: Math.min(columnCount - 1, currentColumn + 1)
+                })}
+              />
               
               <CollapseButton 
                 onClick={() => toggleGroupCollapse(field.id)}
@@ -1318,7 +1253,14 @@ const ElectionBuilder = () => {
                             flex: 1 
                           }}
                         />
-                        {renderElectoralChildControls(field, child, childIndex, currentColumn, getElectoralColumnChildren(field, currentColumn))}
+                        <FieldsElectoralControlsByField
+                          childIndex={childIndex}
+                          columnChildren={currentColumn}
+                          starClick={() => moveFieldBetweenColumns(field.id, child.id, currentColumn, -1)}
+                          upClick={() => moveFieldInElectoral(field.id, childIndex, childIndex - 1)}
+                          downClick={() => moveFieldInElectoral(field.id, childIndex, childIndex + 1)}
+                          removeClick={() => removeFieldFromElectoral(field.id, child.label)}
+                        />
                       </div>
                       
                       {(() => {
@@ -1469,21 +1411,13 @@ const ElectionBuilder = () => {
                         onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
                         style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
                       />
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {childIndex > 0 && (
-                          <MoveButton
-                            type='up'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
-                          />
-                        )}
-                        {childIndex < field.children.length - 1 && (
-                          <MoveButton
-                            type='down'
-                            onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
-                          />
-                        )}
-                        <RemoveButton small onClick={() => removeFieldFromGroup(field.id, child.id)} />
-                      </div>
+                      <FieldsGroupControlsByField 
+                        field={field} 
+                        childIndex={childIndex}
+                        upClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
+                        downClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
+                        removeClick={() => removeFieldFromGroup(field.id, child.id)}
+                      />
                     </div>
                     {(() => {
                       switch (child.type) {
@@ -1898,7 +1832,6 @@ const ElectionBuilder = () => {
           >
             <FieldsList
               fields={fields}
-              parseTextWithSpans={parseTextWithSpans}
               updateFieldLabel={updateFieldLabel}
               moveField={moveField}
               removeField={removeField}

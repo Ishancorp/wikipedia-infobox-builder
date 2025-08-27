@@ -13,7 +13,22 @@
   padding: 4px 8px;
 }
 
-.move-btn {
+.electoral-btn {
+  background: #fff;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+.electoral-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.electoral-btn:not(:disabled):hover {
+  background: #ddd;
+}
+
+.move-btn, .electoral-btn {
   padding: 2px 6px;
   font-size: 12px
 }

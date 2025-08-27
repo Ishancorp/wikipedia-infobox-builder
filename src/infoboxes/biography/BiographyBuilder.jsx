@@ -7,15 +7,14 @@ import PreviewTable from '../components/previews/PreviewTable/PreviewTable.jsx';
 import Sidebar from '../components/sidebar/sidebar.jsx';
 import TitleEditor from '../components/title/TitleEditor.jsx';
 import FieldsList from '../components/dropzone/FieldsList/FieldsList.jsx';
-import RemoveButton from '../components/buttons/RemoveButton.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
-import MoveButton from '../components/buttons/MoveButton.jsx';
 import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
 import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsTreeList from '../components/dropzone/FieldsTreeList/FieldsTreeList.jsx';
 import FieldsDate from '../components/dropzone/FieldsDate/FieldsDate.jsx';
+import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
 const BiographyBuilder = () => {
@@ -398,15 +397,13 @@ const BiographyBuilder = () => {
                         onChange={(e) => updateGroupChildLabel(field.id, child.id, e.target.value)}
                         style={{ fontWeight: 'bold', border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
                       />
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {childIndex > 0 && (
-                          <MoveButton type='up' onClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)} />
-                        )}
-                        {childIndex < field.children.length - 1 && (
-                          <MoveButton type='down' onClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)} />
-                        )}
-                        <RemoveButton small onClick={() => removeFieldFromGroup(field.id, child.id)} />
-                      </div>
+                      <FieldsGroupControlsByField 
+                        field={field} 
+                        childIndex={childIndex}
+                        upClick={() => moveFieldInGroup(field.id, childIndex, childIndex - 1)}
+                        downClick={() => moveFieldInGroup(field.id, childIndex, childIndex + 1)}
+                        removeClick={() => removeFieldFromGroup(field.id, child.id)}
+                      />
                     </div>
                     {(() => {
                       switch (child.type) {
@@ -607,7 +604,6 @@ const BiographyBuilder = () => {
           >
             <FieldsList
               fields={fields}
-              parseTextWithSpans={parseTextWithSpans}
               updateFieldLabel={updateFieldLabel}
               moveField={moveField}
               removeField={removeField}
