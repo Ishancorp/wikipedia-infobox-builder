@@ -16,7 +16,7 @@ export default function FieldsElectoralControlsByField({ childIndex, columnChild
           title="Move up in column"
         />
       )}
-      {childIndex < columnChildren.length - 1 && (
+      {childIndex < columnChildren - 1 && (
         <MoveButton
           type='down'
           onClick={downClick}
