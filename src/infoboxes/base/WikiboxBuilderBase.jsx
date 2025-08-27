@@ -420,8 +420,8 @@ export class PreviewRenderer {
     return <PreviewLink field={field}/>;
   }
 
-  renderListPreview(field, type = 'list') {
-    const className = `wikibox-preview-${type}`;
+  renderListPreview(field) {
+    const className = `wikibox-preview-${field.type}`;
     return (
       <ul className={className} style={{ margin: 0, paddingLeft: '16px' }}>
         {field.value.map((item, index) => (

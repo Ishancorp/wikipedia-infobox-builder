@@ -9,8 +9,6 @@ import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
-import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
-import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
@@ -223,28 +221,14 @@ class BiographyPreviewRenderer extends PreviewRenderer {
   renderPreviewValue(field) {
     switch (field.type) {
       case 'image':
-        return <PreviewImage field={field} maxWidth={'100%'}/>;
+        return this.renderImagePreview(field);
       
       case 'list':
-        return (
-          <ul className="wikibox-preview-list" style={{ margin: 0, paddingLeft: '16px' }}>
-            {field.value.map((item, index) => (
-              <li key={index} className="wikibox-preview-list-item">{item}</li>
-            ))}
-          </ul>
-        );
-      
       case 'treelist':
-        return (
-          <ul className="wikibox-preview-treelist" style={{ margin: 0, paddingLeft: '16px' }}>
-            {field.value.map((item, index) => (
-              <li key={index} className="wikibox-preview-treelist-item">{item}</li>
-            ))}
-          </ul>
-        );
+        return this.renderListPreview(field);
       
       case 'link':
-        return <PreviewLink field={field}/>;
+        return this.renderLinkPreview(field);
       
       case 'group':
         return (

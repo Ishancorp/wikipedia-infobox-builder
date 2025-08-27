@@ -17,8 +17,6 @@ import FieldsElectoralHeaderByField from '../components/dropzone/FieldsElectoral
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
 import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 import RenderElectoralTable from '../components/render/RenderElectoralTable.jsx';
-import PreviewImage from '../components/previews/PreviewImage/PreviewImage.jsx';
-import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload, getDefaultValue } = helpers;
 
@@ -341,7 +339,7 @@ class ElectionFieldRenderer extends FieldRenderer {
                     });
 
                     const baseId = Date.now();
-                    Object.entries(groupedByLabel).forEach(([label, children]) => {
+                    Object.entries(groupedByLabel).forEach(([, children]) => {
                       const template = children[0];
                       for (let colIndex = oldColumns; colIndex < newColumns; colIndex++) {
                         updatedChildren.push({
@@ -713,16 +711,16 @@ class ElectionPreviewRenderer extends PreviewRenderer {
   renderPreviewValue(field) {
     switch (field.type) {
       case 'thumbnail':
-        return <PreviewImage field={field} maxWidth={'50px'}/>;
+        return this.renderImagePreview(field, '50px');
 
       case 'line':
         return <hr/>;
 
       case 'image':
-        return <PreviewImage field={field} maxWidth={'100%'}/>;
+        return this.renderImagePreview(field);
 
       case 'inlineimage':
-        return <PreviewImage field={field} maxWidth={'150px'} noCaption inline/>;
+        return this.renderImagePreview(field, '150px', true, true);
 
       case 'color':
         return this.renderColorPreview(field);
@@ -734,7 +732,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
         return this.renderListPreview(field, 'treelist');
 
       case 'link':
-        return <PreviewLink field={field}/>;
+        return this.renderLinkPreview(field);
 
       case 'group':
         return field.children && field.children.map((child) => 
