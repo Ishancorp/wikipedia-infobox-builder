@@ -244,7 +244,7 @@ class BiographyPreviewRenderer extends PreviewRenderer {
         ))
       );
     
-    else if (field.type === 'text')
+    else if (field.type === 'text' || field.type === 'date')
       return <span className="wikibox-preview-value" style={{ textAlign: 'left', display: 'block' }}>{parseTextWithSpans(field.value)}</span>;
     
     return <span className="wikibox-preview-value">{parseTextWithSpans(field.value)}</span>;
