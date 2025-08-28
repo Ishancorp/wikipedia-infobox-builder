@@ -727,12 +727,8 @@ class ElectionPreviewRenderer extends PreviewRenderer {
       case 'color':
         return this.renderColorPreview(field);
 
-      case 'treelist':
-      case 'list':
-        return this.renderListPreview(field, field.type);
-
       case 'link':
-        return this.renderLinkPreview(field);
+        return super.renderLinkPreview(field);
 
       case 'group':
         return field.children && field.children.map((child) => 

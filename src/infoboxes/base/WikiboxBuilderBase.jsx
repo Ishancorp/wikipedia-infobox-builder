@@ -400,8 +400,8 @@ export class PreviewRenderer {
     return <PreviewImage field={field} maxWidth={maxWidth} inline={inline} noCaption={noCaption}/>;
   }
 
-  renderLinkPreview(field) {
-    return <PreviewLink field={field}/>;
+  renderLinkPreview(field, alignment='center') {
+    return <PreviewLink field={field} alignment={alignment}/>;
   }
 
   renderListPreview(field) {

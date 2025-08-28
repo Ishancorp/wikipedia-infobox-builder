@@ -9,6 +9,7 @@ import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
+import PreviewLink from '../components/previews/PreviewLink/PreviewLink.jsx';
 
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
@@ -218,29 +219,35 @@ class BiographyFieldRenderer extends FieldRenderer {
 
 class BiographyPreviewRenderer extends PreviewRenderer {
   renderPreviewValue(field) {
-    switch (field.type) {
-      case 'image':
-        return this.renderImagePreview(field);
-      
-      case 'list':
-      case 'treelist':
-        return this.renderListPreview(field);
-      
-      case 'link':
-        return this.renderLinkPreview(field);
-      
-      case 'group':
-        return (
-          field.children && field.children.map((child) => (
-            <div key={child.id} style={{ marginBottom: '2px', paddingLeft: '12px' }}>
-              <strong>{child.label}:</strong> {this.renderPreviewValue(child)}
-            </div>
-          ))
-        );
-      
-      default:
-        return <span className="wikibox-preview-value" style={{ textAlign: 'left', display: 'block' }}>{parseTextWithSpans(field.value)}</span>;
-    }
+    if (field.type === 'image')
+      return this.renderImagePreview(field);
+    
+    else if (field.type === 'list' || field.type === 'treelist'){
+      const className = `wikibox-preview-${field.type}`;
+      return (
+        <ul className={className} style={{ margin: 0, paddingLeft: '16px', textAlign: 'left' }}>
+          {field.value.map((item, index) => (
+            <li key={index} className={`${className}-item`}>{item}</li>
+          ))}
+        </ul>
+    )}
+    
+    else if (field.type === 'link')
+      return <PreviewLink field={field} alignment={'left'}/>;
+    
+    else if (field.type === 'group')
+      return (
+        field.children && field.children.map((child) => (
+          <div key={child.id} style={{ marginBottom: '2px', paddingLeft: '12px' }}>
+            <strong>{child.label}:</strong> {this.renderPreviewValue(child)}
+          </div>
+        ))
+      );
+    
+    else if (field.type === 'text')
+      return <span className="wikibox-preview-value" style={{ textAlign: 'left', display: 'block' }}>{parseTextWithSpans(field.value)}</span>;
+    
+    return <span className="wikibox-preview-value">{parseTextWithSpans(field.value)}</span>;
   }
 
   renderTableRow(field, context) {
