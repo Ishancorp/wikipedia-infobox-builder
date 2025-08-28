@@ -9,7 +9,6 @@ import FieldsImage from '../components/dropzone/FieldsImage/FieldsImage.jsx';
 import FieldsLink from '../components/dropzone/FieldsLink/FieldsLink.jsx';
 import CollapseButton from '../components/buttons/CollapseButton.jsx';
 import FieldsGroupControlsByField from '../components/dropzone/FieldsGroup/FieldsGroupControlsByField.jsx';
-import RenderEmptyRow from '../components/render/RenderEmptyRow.jsx';
 
 const { parseTextWithSpans, handleImageUpload, handleGroupImageUpload } = helpers;
 
@@ -240,27 +239,12 @@ class BiographyPreviewRenderer extends PreviewRenderer {
         );
       
       default:
-        return <span className="wikibox-preview-value">{parseTextWithSpans(field.value)}</span>;
+        return <span className="wikibox-preview-value" style={{ textAlign: 'left', display: 'block' }}>{parseTextWithSpans(field.value)}</span>;
     }
   }
 
   renderTableRow(field, context) {
-    if (field.position === 'normal') {
-      return (
-        <>
-          <tr key={field.id} className="wikibox-preview-row">
-            <td className="wikibox-preview-label">
-              {parseTextWithSpans(field.label)}
-            </td>
-            <td className="wikibox-preview-value-container" style={{textAlign: 'left'}}>
-              {this.renderPreviewValue(field)}
-            </td>
-          </tr>
-          <RenderEmptyRow/>
-        </>
-      );
-    }
-    else if (field.position === 'subheader') {
+    if (field.position === 'subheader') {
       return (
         <tr key={field.id} className="wikibox-preview-row">
           <td colSpan="2" className="wikibox-preview-subheader">

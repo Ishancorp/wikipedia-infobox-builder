@@ -713,16 +713,16 @@ class ElectionPreviewRenderer extends PreviewRenderer {
   renderPreviewValue(field) {
     switch (field.type) {
       case 'thumbnail':
-        return this.renderImagePreview(field, '50px');
+        return super.renderImagePreview(field, '50px');
 
       case 'line':
         return <hr/>;
 
       case 'image':
-        return this.renderImagePreview(field);
+        return super.renderImagePreview(field);
 
       case 'inlineimage':
-        return this.renderImagePreview(field, '150px', true, true);
+        return super.renderImagePreview(field, '150px', true, true);
 
       case 'color':
         return this.renderColorPreview(field);
@@ -767,31 +767,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
   }
 
   renderTableRow(field, context) {
-    if(field.type === 'line') console.log(field.position);
-
-    if (field.position === 'normal') {
-      return (
-        <>
-          <tr key={field.id} className="wikibox-preview-row">
-            <td className="wikibox-preview-label">
-              {parseTextWithSpans(field.label)}
-            </td>
-            {field.type === 'color' ? (
-              <td
-                className="wikibox-preview-value-container"
-                style={{ height: '6px', backgroundColor: field.value }}
-              ></td>
-            ) : (
-              <td className="wikibox-preview-value-container">
-                {this.renderPreviewValue(field)}
-              </td>
-            )}
-          </tr>
-          <RenderEmptyRow/>
-        </>
-      );
-    }
-    else if (field.position === 'ternary' || field.position === 'binary') {
+    if (field.position === 'ternary' || field.position === 'binary') {
       return (
         <>
           <tr key={field.id} className="wikibox-preview-row">
@@ -801,15 +777,6 @@ class ElectionPreviewRenderer extends PreviewRenderer {
           </tr>
           <RenderEmptyRow/>
         </>
-      );
-    }
-    else if (field.position === 'thumbnail' || field.position === 'image') {
-      return (
-        <tr key={field.id} className="wikibox-preview-row">
-          <td colSpan="2" className="wikibox-preview-image">
-            {this.renderPreviewValue(field)}
-          </td>
-        </tr>
       );
     }
     else if (field.position === 'group') {
@@ -825,7 +792,7 @@ class ElectionPreviewRenderer extends PreviewRenderer {
     return super.renderTableRow(field, this.renderPreviewValue);
   }
 
-  renderElectoralTableRow(field, context) {
+  renderElectoralTableRow(field, ) {
     if (!field.children || field.children.length <= 0) {
       return null;
     }
